@@ -46,7 +46,7 @@ function Teacher() {
   const [drawerOpen, setDrawerOpen] = useState(true);
 
   const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+  const isMobile = useMediaQuery(theme.breakpoints.down('xs'));
 
   const handleDrawerToggle = () => {
     setMobileOpen(!mobileOpen);
@@ -101,7 +101,7 @@ function Teacher() {
         <CssBaseline />
         <Drawer
           variant={isMobile ? 'temporary' : 'persistent'}
-          open={isMobile ? mobileOpen : true} // Ensure drawer is always open on desktop
+          open={isMobile ? mobileOpen :true} // Ensure drawer is always open on desktop
           onClose={handleDrawerToggle}
           sx={{
             width: drawerOpen ? drawerWidth : collapsedDrawerWidth,
