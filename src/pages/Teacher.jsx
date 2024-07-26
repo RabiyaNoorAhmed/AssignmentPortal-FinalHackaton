@@ -43,7 +43,7 @@ const iconMap = {
 function Teacher() {
   const [selectedComponent, setSelectedComponent] = useState('Dashboard');
   const [mobileOpen, setMobileOpen] = useState(false);
-  const [drawerOpen, setDrawerOpen] = useState(true);
+  const [drawerOpen, setDrawerOpen] = useState(false);
 
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('xs'));
