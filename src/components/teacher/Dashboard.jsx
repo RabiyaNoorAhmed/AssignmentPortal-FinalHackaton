@@ -17,9 +17,9 @@ function Dashboard() {
     const fetchData = async () => {
       setLoading(true);
       try {
-        const response = await fetch('http://localhost:5000/api/teacher');
-        const data = await response.json();
-        setTeacherInfo(data);
+        // const response = await fetch('http://localhost:5000/api/teacher');
+        // const data = await response.json();
+        // setTeacherInfo(data);
       } catch (error) {
         console.error('Error fetching teacher data:', error);
       } finally {

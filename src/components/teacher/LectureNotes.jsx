@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import axios from 'axios';
 import {
   Table,
   TableBody,
@@ -25,28 +26,9 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import EditIcon from '@mui/icons-material/Edit';
 import AddIcon from '@mui/icons-material/Add';
 
-const courses = ['Math', 'History', 'Science'];
-const batches = ['Batch A', 'Batch B', 'Batch C'];
-
-const initialNotes = {
-  'Math': {
-    'Batch A': [
-      { id: 1, title: 'Introduction to Biology', date: '2024-07-25', content: 'Overview of biological concepts.', link: '', file: '' },
-    ],
-    'Batch B': [],
-  },
-  'History': {
-    'Batch A': [
-      { id: 2, title: 'Advanced Chemistry', date: '2024-07-26', content: 'Detailed study of chemical reactions.', link: '', file: '' },
-    ],
-    'Batch B': [],
-  },
-  'Science': {
-    'Batch C': [
-      { id: 3, title: 'Modern Physics', date: '2024-07-27', content: 'Exploration of quantum mechanics.', link: '', file: '' },
-    ],
-  },
-};
+const courses = ['Graphics Designing', 'Web and App Development', 'Tecno Kids', 'UI UX Designing', 'Generative Ai & Chatbox', 'Digital Marketing', 'Amazon Mastery'];
+const batches = ['Batch 11', 'Batch 12', 'Batch 13', 'Batch 14', 'Batch 15', 'Batch 16', 'Batch 17'];
+const acceptedFileTypes = ['application/pdf', 'image/jpeg', 'image/png', 'image/gif'];
 
 const NotesTable = () => {
   const [selectedCourse, setSelectedCourse] = useState('');
@@ -56,6 +38,21 @@ const NotesTable = () => {
   const [currentNote, setCurrentNote] = useState(null);
   const [newNote, setNewNote] = useState({ title: '', date: '', content: '', link: '', file: null });
 
+  useEffect(() => {
+    if (selectedCourse && selectedBatch) {
+      fetchNotes();
+    }
+  }, [selectedCourse, selectedBatch]);
+
+  const fetchNotes = async () => {
+    try {
+      const response = await axios.get(`http://localhost:5000/api/notes/filter?course=${selectedCourse}&batch=${selectedBatch}`);
+      setNotes(response.data);
+    } catch (error) {
+      console.error('Failed to fetch notes:', error);
+    }
+  };
+
   const handleCourseChange = (event) => {
     setSelectedCourse(event.target.value);
     setSelectedBatch('');
@@ -64,12 +61,11 @@ const NotesTable = () => {
 
   const handleBatchChange = (event) => {
     setSelectedBatch(event.target.value);
-    setNotes(initialNotes[selectedCourse]?.[event.target.value] || []);
+    setNotes([]);
   };
-
   const handleOpenDialog = (note = null) => {
-    setCurrentNote(note);
-    setNewNote(note ? { ...note } : { title: '', date: '', content: '', link: '', file: null });
+    setCurrentNote(note); // Store the note being edited
+    setNewNote(note ? { ...note, file: null } : { title: '', date: '', content: '', link: '', file: null });
     setOpenDialog(true);
   };
 
@@ -77,26 +73,67 @@ const NotesTable = () => {
     setOpenDialog(false);
   };
 
-  const handleSave = () => {
-    if (currentNote) {
-      setNotes(notes.map(note => (note.id === currentNote.id ? newNote : note)));
-    } else {
-      setNotes([...notes, { ...newNote, id: notes.length + 1 }]);
+  const handleSave = async () => {
+    try {
+      const formData = new FormData();
+      formData.append('title', newNote.title);
+      formData.append('date', newNote.date);
+      formData.append('content', newNote.content);
+      formData.append('link', newNote.link);
+      formData.append('course', selectedCourse);
+      formData.append('batch', selectedBatch);
+
+      if (newNote.file) {
+        formData.append('file', newNote.file);
+      }
+
+      if (currentNote && currentNote._id) {  // Make sure you're using _id if that's the correct property
+        const response = await axios.patch(`http://localhost:5000/api/notes/${currentNote._id}`, formData, {
+          headers: { 'Content-Type': 'multipart/form-data' }
+        });
+        console.log('Note updated:', response.data);
+      } else {
+        const response = await axios.post('http://localhost:5000/api/notes', formData, {
+          headers: { 'Content-Type': 'multipart/form-data' }
+        });
+        console.log('Note created:', response.data);
+      }
+
+      fetchNotes();
+      handleCloseDialog();
+    } catch (error) {
+      console.error('Failed to save note:', error);
+      alert(`Failed to save note: ${error.response?.data?.message || error.message}`);
     }
-    handleCloseDialog();
   };
 
-  const handleDelete = (id) => {
-    setNotes(notes.filter(note => note.id !== id));
+  const handleDelete = async (id) => {
+    try {
+      const response = await axios.delete(`http://localhost:5000/api/notes/${id}`);
+      console.log('Note deleted:', response.data);
+      fetchNotes(); // Refresh the list after deletion
+    } catch (error) {
+      console.error('Failed to delete note:', error);
+      alert(`Failed to delete note: ${error.response?.data?.message || error.message}`);
+    }
   };
+
 
   const handleFileChange = (event) => {
-    setNewNote({ ...newNote, file: event.target.files[0] });
+    const file = event.target.files[0];
+
+    if (file) {
+      if (acceptedFileTypes.includes(file.type)) {
+        setNewNote({ ...newNote, file });
+      } else {
+        alert('Invalid file type. Please select a PDF or image file.');
+      }
+    }
   };
 
   return (
     <Box sx={{ p: 3, display: 'flex', flexDirection: 'column', gap: 3 }}>
-    <Typography variant="h4" gutterBottom>
+      <Typography variant="h4" gutterBottom>
         Lecture Notes
       </Typography>
       <Box sx={{ display: 'flex', gap: 2, mb: 2 }}>
@@ -157,12 +194,20 @@ const NotesTable = () => {
                     <TableCell>{note.date}</TableCell>
                     <TableCell>{note.content}</TableCell>
                     <TableCell>{note.link ? <a href={note.link} target="_blank" rel="noopener noreferrer">{note.link}</a> : ''}</TableCell>
-                    <TableCell>{note.file ? <a href={URL.createObjectURL(note.file)} target="_blank" rel="noopener noreferrer">View File</a> : ''}</TableCell>
+                    <TableCell>
+                      {note.file ? (
+                        typeof note.file === 'string' ? (
+                          <a href={note.file} target="_blank" rel="noopener noreferrer">
+                            View File
+                          </a>
+                        ) : 'Invalid File'
+                      ) : ''}
+                    </TableCell>
                     <TableCell>
                       <IconButton color="primary" onClick={() => handleOpenDialog(note)}>
                         <EditIcon />
                       </IconButton>
-                      <IconButton color="error" onClick={() => handleDelete(note.id)}>
+                      <IconButton color="error" onClick={() => handleDelete(note._id)}>
                         <DeleteIcon />
                       </IconButton>
                     </TableCell>

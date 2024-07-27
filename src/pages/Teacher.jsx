@@ -10,6 +10,7 @@ import NoteIcon from '@mui/icons-material/Note';
 import AssignmentIcon from '@mui/icons-material/Assignment';
 import ChatIcon from '@mui/icons-material/Chat';
 import GradeIcon from '@mui/icons-material/Grade'; // Import the new icon
+import SettingsIcon from '@mui/icons-material/Settings';
 import Dashboard from '../components/teacher/Dashboard';
 import CourseOutline from '../components/teacher/CourseOutline';
 import LectureNotes from '../components/teacher/LectureNotes';
@@ -17,7 +18,7 @@ import Assignments from '../components/teacher/Assignments';
 import Chat from '../components/teacher/Chat';
 import Header from '../components/header/Header';
 import Marking from '../components/teacher/Marking';
-
+import UserProfile from '../components/userprofile/UserProfile';
 const drawerWidth = 240;
 const collapsedDrawerWidth = 60;
 
@@ -27,7 +28,8 @@ const componentMap = {
   'Lecture Notes': <LectureNotes />,
   'Assignments': <Assignments />,
   'Marking': <Marking />,
-  'Chat': <Chat />
+  'Chat': <Chat />,
+  'UserProfile': <UserProfile/>
 };
 
 const iconMap = {
@@ -37,7 +39,8 @@ const iconMap = {
   'Lecture Notes': <NoteIcon />,
   'Assignments': <AssignmentIcon />,
   'Marking': <GradeIcon />, // Add the new icon for Marking
-  'Chat': <ChatIcon />
+  'Chat': <ChatIcon />,
+  'UserProfile':<SettingsIcon/>
 };
 
 function Teacher() {

@@ -1,35 +1,56 @@
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
-import { Box, TextField, Button, Typography, Avatar, Container, Grid, FormControl, InputLabel, Select, MenuItem } from '@mui/material';
-import Logo from '../assets/images/logo.png'; // Adjust the path as necessary
-import avatar from '../assets/images/usericon.png';
+import { Link, useNavigate } from 'react-router-dom'; // Import useNavigate
+import axios from 'axios';
+import { toast } from 'react-toastify';
+import {
+  Box,
+  TextField,
+  Button,
+  Typography,
+  Avatar,
+  Container,
+  Grid,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem,
+} from '@mui/material';
+import Logo from '../assets/images/logo.png';
 
 const Register = () => {
-  const [selectedFile, setSelectedFile] = useState(null);
-  const [previewURL, setPreviewURL] = useState("");
+  const navigate = useNavigate(); // Initialize useNavigate
   const [formData, setFormData] = useState({
     name: '',
     email: '',
     password: '',
-    photo: selectedFile,
+    confirmPassword: '',
     gender: '',
-    role: 'patient'
+    role: 'student',
   });
 
-  const handleInputChange = e => {
+  const handleInputChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const handleFileInputChange = async event => {
-    const file = event.target.files[0];
-    setSelectedFile(file);
-    setPreviewURL(URL.createObjectURL(file));
-    // Handle file upload here
-  };
-
-  const submitHandler = async event => {
+  const submitHandler = async (event) => {
     event.preventDefault();
-    // Handle form submission here
+
+    if (formData.password !== formData.confirmPassword) {
+      toast.error("Passwords do not match!");
+      return;
+    }
+
+    try {
+      const response = await axios.post(`${import.meta.env.VITE_BASE_URL}/users/register`, formData, { withCredentials: true });;
+      toast.success("Registration successful! Please log in."); // Display success message
+      navigate('/'); // Redirect to login page
+    } catch (error) {
+      if (error.response) {
+        toast.error(error.response.data.message || "Registration failed!");
+      } else {
+        toast.error("An error occurred. Please try again.");
+      }
+    }
   };
 
   return (
@@ -86,7 +107,18 @@ const Register = () => {
                 onChange={handleInputChange}
                 required
               />
-              <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 2, gap:2 }}>
+              <TextField
+                label="Confirm Password"
+                type="password"
+                variant="outlined"
+                fullWidth
+                margin="normal"
+                name="confirmPassword"
+                value={formData.confirmPassword}
+                onChange={handleInputChange}
+                required
+              />
+              <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 2, gap: 2 }}>
                 <FormControl fullWidth>
                   <InputLabel>Are you a:</InputLabel>
                   <Select
@@ -95,8 +127,8 @@ const Register = () => {
                     name="role"
                     label="Are you a:"
                   >
-                    <MenuItem value="patient">Student</MenuItem>
-                    <MenuItem value="doctor">Teacher</MenuItem>
+                    <MenuItem value="student">Student</MenuItem>
+                    <MenuItem value="teacher">Teacher</MenuItem>
                   </Select>
                 </FormControl>
                 <FormControl fullWidth>
@@ -107,32 +139,11 @@ const Register = () => {
                     name="gender"
                     label="Gender:"
                   >
-                    {/* <MenuItem value="">Select</MenuItem> */}
                     <MenuItem value="male">Male</MenuItem>
                     <MenuItem value="female">Female</MenuItem>
-                    <MenuItem value="other">Prefer Not to Say</MenuItem>
+                    <MenuItem value="other">Other</MenuItem>
                   </Select>
                 </FormControl>
-              </Box>
-              <Box sx={{ display: 'flex', alignItems: 'center', mt: 2 }}>
-                <Avatar
-                  src={previewURL || avatar}
-                  alt="Profile"
-                  sx={{ width: 60, height: 60, border: '2px solid #3b71ca', mr: 2 }}
-                />
-                <Button
-                  variant="contained"
-                  component="label"
-                  sx={{ width: '40%' }}
-                >
-                  Upload Photo
-                  <input
-                    type="file"
-                    accept=".jpg, .png"
-                    hidden
-                    onChange={handleFileInputChange}
-                  />
-                </Button>
               </Box>
               <Button
                 type="submit"
@@ -157,3 +168,6 @@ const Register = () => {
 };
 
 export default Register;
+
+
+

@@ -6,11 +6,13 @@ const Footer = () => {
     <Box
       component="footer"
       sx={{
-        mt: '100px',
+        mt: '500px',
+        // position:"sticky",
         backgroundColor: "#fbfbfb",
         boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',
         py: 2, // Padding on the y-axis
         textAlign: 'center',
+
       }}
     >
       <Container maxWidth="lg">
