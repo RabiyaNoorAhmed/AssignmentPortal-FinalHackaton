@@ -88,12 +88,14 @@ const NotesTable = () => {
       }
 
       if (currentNote && currentNote._id) {  // Make sure you're using _id if that's the correct property
-        const response = await axios.patch(`http://localhost:5000/api/notes/${currentNote._id}`, formData, {
-          headers: { 'Content-Type': 'multipart/form-data' }
+        const response = await axios.patch(`${import.meta.env.VITE_BASE_URL}/notes/${currentNote._id}`, formData, {
+          headers: { 'Content-Type': 'multipart/form-data'
+            
+           }
         });
         console.log('Note updated:', response.data);
       } else {
-        const response = await axios.post('http://localhost:5000/api/notes', formData, {
+        const response = await axios.post(`${import.meta.env.VITE_BASE_URL}/notes`, formData, {
           headers: { 'Content-Type': 'multipart/form-data' }
         });
         console.log('Note created:', response.data);
@@ -109,7 +111,7 @@ const NotesTable = () => {
 
   const handleDelete = async (id) => {
     try {
-      const response = await axios.delete(`http://localhost:5000/api/notes/${id}`);
+      const response = await axios.delete(`${import.meta.env.VITE_BASE_URL}/notes/${id}`);
       console.log('Note deleted:', response.data);
       fetchNotes(); // Refresh the list after deletion
     } catch (error) {
