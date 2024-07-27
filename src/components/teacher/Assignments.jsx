@@ -28,8 +28,9 @@ import EditIcon from '@mui/icons-material/Edit';
 import AddIcon from '@mui/icons-material/Add';
 import { styled } from '@mui/system';
 
-const courses = ['Math', 'History', 'Science'];
-const batches = ['Batch A', 'Batch B', 'Batch C'];
+const courses = ['Graphics Designing', 'Web and App Development', 'Tecno Kids', 'UI UX Designing', 'Generative Ai & Chatbox', 'Digital Marketing', 'Amazon Mastery'];
+const batches = ['Batch 11', 'Batch 12', 'Batch 13', 'Batch 14', 'Batch 15', 'Batch 16', 'Batch 17'];
+const acceptedFileTypes = ['application/pdf', 'image/jpeg', 'image/png', 'image/gif'];
 
 const initialAssignments = {
   'Math': {
