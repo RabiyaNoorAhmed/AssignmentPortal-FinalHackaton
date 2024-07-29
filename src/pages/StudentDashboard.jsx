@@ -1,21 +1,22 @@
 import React, { useState } from 'react';
 import {
-  Box, Typography, Container, IconButton, CssBaseline, Select, MenuItem, Button, Grid, useMediaQuery, useTheme
+  Box, Typography, Container, Button, Grid, Select, MenuItem, CssBaseline, useMediaQuery, useTheme
 } from '@mui/material';
 import Sidebar from './SideBar'; // Import Sidebar component
 import AssignmentPreview from './AssignmentPreview'; // Import the AssignmentPreview component
 import SubmitAssignment from './SubmitAssignment'; // Import the SubmitAssignment component
 import Header from '../components/header/Header';
-import "./StudentDashboard.css";
+import Loader from '../components/loader/Loader'; // Import Loader component
+import UserProfile from '../components/userprofile/UserProfile'; // Import UserProfile component
+import './StudentDashboard.css';
 
 export default function StudentDashboard() {
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [selectedCourse, setSelectedCourse] = useState('');
-  const [selectedSession, setSelectedSession] = useState('');
   const [selectedBatch, setSelectedBatch] = useState('');
-  const [selectedTeacher, setSelectedTeacher] = useState('');
   const [selectedSection, setSelectedSection] = useState(''); // Track current section
   const [deadline, setDeadline] = useState('2024-08-01'); // Example deadline date
+  const [loading, setLoading] = useState(false); // State for loader
 
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
@@ -29,17 +30,29 @@ export default function StudentDashboard() {
     setter(event.target.value);
   };
 
+  const handleSectionChange = (section) => {
+    setLoading(true); // Show loader before changing section
+    setTimeout(() => {
+      setSelectedSection(section);
+      setLoading(false); // Hide loader after section change
+    }, 500); // Simulate delay
+  };
+
   const renderContent = () => {
     switch (selectedSection) {
       case 'view-assignments':
         return (
           <AssignmentPreview
-            onAddAssignment={() => setSelectedSection('submit-assignment')}
+            course={selectedCourse}
+            batch={selectedBatch}
+            onAddAssignment={() => handleSectionChange('submit-assignment')}
             deadline={deadline} // Passing deadline as prop to AssignmentPreview
           />
         );
       case 'submit-assignment':
         return <SubmitAssignment deadline={deadline} />;
+      case 'User Profile':
+        return <UserProfile />;
       default:
         return (
           <>
@@ -64,32 +77,16 @@ export default function StudentDashboard() {
                         }}
                       >
                         <MenuItem value="" disabled>Select Course</MenuItem>
-                        <MenuItem value="course1">Web & App Development</MenuItem>
-                        <MenuItem value="course2">Graphic Designing</MenuItem>
-                        <MenuItem value="course3">Flutter</MenuItem>
+                        <MenuItem value="Graphics Designing">Graphics Designing</MenuItem>
+                        <MenuItem value="Web and App Development">Web and App Development</MenuItem>
+                        <MenuItem value="Tecno Kids">Tecno Kids</MenuItem>
+                        <MenuItem value="UI UX Designing">UI UX Designing</MenuItem>
+                        <MenuItem value="Generative Ai & Chatbox">Generative Ai & Chatbox</MenuItem>
+                        <MenuItem value="Digital Marketing">Digital Marketing</MenuItem>
+                        <MenuItem value="Amazon Mastery">Amazon Mastery</MenuItem>
                       </Select>
                     </Grid>
                     <Grid item xs={12} sm={6}>
-                      <Select
-                        value={selectedSession}
-                        onChange={handleChange(setSelectedSession)}
-                        displayEmpty
-                        inputProps={{ 'aria-label': 'Select Session' }}
-                        fullWidth
-                        sx={{
-                          height: isSmallScreen ? '45px' : '56px',
-                          fontSize: isSmallScreen ? '14px' : '16px',
-                        }}
-                      >
-                        <MenuItem value="" disabled>Select Session</MenuItem>
-                        <MenuItem value="session1">Session 1</MenuItem>
-                        <MenuItem value="session2">Session 2</MenuItem>
-                        <MenuItem value="session3">Session 3</MenuItem>
-                      </Select>
-                    </Grid>
-                  </Grid>
-                  <Grid container item xs={12} spacing={2}>
-                    <Grid item xs={12} sm={4}>
                       <Select
                         value={selectedBatch}
                         onChange={handleChange(setSelectedBatch)}
@@ -102,40 +99,26 @@ export default function StudentDashboard() {
                         }}
                       >
                         <MenuItem value="" disabled>Select Batch</MenuItem>
-                        <MenuItem value="batch1">Batch 1</MenuItem>
-                        <MenuItem value="batch2">Batch 2</MenuItem>
-                        <MenuItem value="batch3">Batch 3</MenuItem>
+                        <MenuItem value="Batch 11">Batch 11</MenuItem>
+                        <MenuItem value="Batch 12">Batch 12</MenuItem>
+                        <MenuItem value="Batch 13">Batch 13</MenuItem>
+                        <MenuItem value="Batch 14">Batch 14</MenuItem>
+                        <MenuItem value="Batch 15">Batch 15</MenuItem>
+                        <MenuItem value="Batch 16">Batch 16</MenuItem>
+                        <MenuItem value="Batch 17">Batch 17</MenuItem>
                       </Select>
                     </Grid>
-                    <Grid item xs={12} sm={4}>
-                      <Select
-                        value={selectedTeacher}
-                        onChange={handleChange(setSelectedTeacher)}
-                        displayEmpty
-                        inputProps={{ 'aria-label': 'Select Teacher' }}
-                        fullWidth
-                        sx={{
-                          height: isSmallScreen ? '45px' : '56px',
-                          fontSize: isSmallScreen ? '14px' : '16px',
-                        }}
-                      >
-                        <MenuItem value="" disabled>Select Teacher</MenuItem>
-                        <MenuItem value="teacher1">Miss Iqra</MenuItem>
-                        <MenuItem value="teacher2">Miss Farah</MenuItem>
-                        <MenuItem value="teacher3">Miss Aiman</MenuItem>
-                      </Select>
-                    </Grid>
-                    <Grid item xs={12} sm={4} display="flex" alignItems="center" justifyContent="center">
-                      <Button
-                        variant="contained"
-                        color="primary"
-                        sx={{ height: '56px', py: 1.5 }}
-                        fullWidth
-                        onClick={() => setSelectedSection('view-assignments')} // Set section to view-assignments
-                      >
-                        View Assignments
-                      </Button>
-                    </Grid>
+                  </Grid>
+                  <Grid item xs={12} display="flex" alignItems="center" justifyContent="center">
+                    <Button
+                      variant="contained"
+                      color="primary"
+                      sx={{ height: '56px', py: 1.5 }}
+                      fullWidth
+                      onClick={() => handleSectionChange('view-assignments')}
+                    >
+                      View Assignments
+                    </Button>
                   </Grid>
                 </Grid>
               </Box>
@@ -159,7 +142,7 @@ export default function StudentDashboard() {
               backgroundColor: 'background.paper',
             }}
           >
-            {renderContent()}
+            {loading ? <Loader /> : renderContent()}
           </Box>
         </Container>
       </Box>
