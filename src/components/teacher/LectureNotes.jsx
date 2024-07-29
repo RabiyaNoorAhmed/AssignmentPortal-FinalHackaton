@@ -37,7 +37,7 @@ const NotesTable = () => {
   const [openDialog, setOpenDialog] = useState(false);
   const [currentNote, setCurrentNote] = useState(null);
   const [newNote, setNewNote] = useState({ title: '', date: '', content: '', link: '', file: null });
-
+  const token = localStorage.getItem('authToken');
   useEffect(() => {
     if (selectedCourse && selectedBatch) {
       fetchNotes();
@@ -46,7 +46,9 @@ const NotesTable = () => {
 
   const fetchNotes = async () => {
     try {
-      const response = await axios.get(`http://localhost:5000/api/notes/filter?course=${selectedCourse}&batch=${selectedBatch}`);
+      const response = await axios.get(`${import.meta.env.VITE_BASE_URL}/notes/filter?course=${selectedCourse}&batch=${selectedBatch}`,{
+        headers: { Authorization: `Bearer ${token}` }
+      });
       setNotes(response.data);
     } catch (error) {
       console.error('Failed to fetch notes:', error);
@@ -87,16 +89,18 @@ const NotesTable = () => {
         formData.append('file', newNote.file);
       }
 
-      if (currentNote && currentNote._id) {  // Make sure you're using _id if that's the correct property
+      if (currentNote && currentNote._id) { 
         const response = await axios.patch(`${import.meta.env.VITE_BASE_URL}/notes/${currentNote._id}`, formData, {
-          headers: { 'Content-Type': 'multipart/form-data'
-            
+          headers: { 'Content-Type': 'multipart/form-data',
+             Authorization: `Bearer ${token}`
            }
         });
         console.log('Note updated:', response.data);
       } else {
         const response = await axios.post(`${import.meta.env.VITE_BASE_URL}/notes`, formData, {
-          headers: { 'Content-Type': 'multipart/form-data' }
+          headers: { 'Content-Type': 'multipart/form-data',
+             Authorization: `Bearer ${token}`
+           }
         });
         console.log('Note created:', response.data);
       }

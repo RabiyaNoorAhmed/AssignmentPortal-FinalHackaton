@@ -5,8 +5,9 @@ import {
 import {
   Assignment, Assessment, Notifications, Person, Help, ExitToApp, Menu as MenuIcon, ChevronLeft, Dashboard, MoreVert, Close
 } from '@mui/icons-material';
+import UserProfile from '../components/userprofile/UserProfile'; // Import your UserProfile component
 
-export default function Sidebar({ drawerOpen, toggleDrawer, setSelectedSection }) {
+export default function Sidebar({ drawerOpen, toggleDrawer, setSelectedSection, selectedSection }) {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const [miniDrawer, setMiniDrawer] = useState(false);
@@ -55,7 +56,7 @@ export default function Sidebar({ drawerOpen, toggleDrawer, setSelectedSection }
           </ListItemIcon>
           <ListItemText primary="Notifications" />
         </ListItem>
-        <ListItem button>
+        <ListItem button onClick={() => setSelectedSection('Profile')}>
           <ListItemIcon>
             <Person />
           </ListItemIcon>
@@ -130,6 +131,9 @@ export default function Sidebar({ drawerOpen, toggleDrawer, setSelectedSection }
           {drawerOpen ? <Close /> : <MenuIcon />}
         </IconButton>
       )}
+
+      {/* Conditional rendering of the UserProfile component */}
+      {selectedSection === 'Profile' && <UserProfile />}
     </>
   );
 }
