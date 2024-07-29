@@ -5,6 +5,8 @@ import Layout from './components/layout/Layout'
 import Home from './pages/Home.jsx'
 import Register from './pages/Register.jsx'
 import './index.css'
+import StudentDashboard from './pages/StudentDashboard'
+
 
 const router = createBrowserRouter([
   {
@@ -14,6 +16,8 @@ const router = createBrowserRouter([
     children: [
       { index: true, element: <Home /> },
       { path: "register", element: <Register /> },
+      { path: "studendashboard", element: <StudentDashboard />},
+     
 
     ]
   }
