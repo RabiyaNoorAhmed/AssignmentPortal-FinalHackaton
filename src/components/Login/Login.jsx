@@ -1,9 +1,14 @@
-import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import React, { useState, useContext } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import axios from 'axios';
+import { toast } from 'react-toastify';
 import { Box, TextField, Button, Container, Typography, Avatar } from '@mui/material';
 import Logo from '../../assets/images/logo.png';
+import { UserContext } from '../../context/userContext';
 
 const Login = () => {
+  const navigate = useNavigate();
+  const { setCurrentUser } = useContext(UserContext);
   const [formData, setFormData] = useState({
     email: '',
     password: ''
@@ -11,6 +16,36 @@ const Login = () => {
 
   const handleInputChange = e => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
+
+  const submitHandler = async (event) => {
+    event.preventDefault();
+
+    try {
+      const response = await axios.post(`${import.meta.env.VITE_BASE_URL}/users/login`, formData, { withCredentials: true });
+      const { token, id, name, role, avatar } = response.data;
+
+      // Store token and user details in localStorage
+      localStorage.setItem('authToken', token);
+      localStorage.setItem('user', JSON.stringify({ name, id, role, avatar, token }));
+
+      // Update UserContext
+      setCurrentUser({ name, id, role, avatar, token });
+
+      toast.success("Login successful!");
+
+      if (role === 'teacher') {
+        navigate('/teacher');
+      } else if (role === 'student') {
+        navigate('/student');
+      }
+    } catch (error) {
+      if (error.response) {
+        toast.error(error.response.data.message || "Login failed!");
+      } else {
+        toast.error("An error occurred. Please try again.");
+      }
+    }
   };
 
   return (
@@ -32,7 +67,7 @@ const Login = () => {
         <Typography variant="h5" gutterBottom>
           Hello <span style={{ color: '#3b71ca' }}>Welcome</span> Back
         </Typography>
-        <Box component="form" noValidate autoComplete="off">
+        <Box component="form" noValidate autoComplete="off" onSubmit={submitHandler}>
           <TextField
             label="Email"
             type="email"
@@ -53,17 +88,15 @@ const Login = () => {
             onChange={handleInputChange}
             required
           />
-          <Link to="/student" style={{ textDecoration: 'none' }}>
-            <Button
-              type="submit"
-              variant="contained"
-              color="primary"
-              fullWidth
-              sx={{ mt: 2, mb: 2 }}
-            >
-              Login
-            </Button>
-          </Link>
+          <Button
+            type="submit"
+            variant="contained"
+            color="primary"
+            fullWidth
+            sx={{ mt: 2, mb: 2 }}
+          >
+            Login
+          </Button>
         </Box>
         <Typography variant="body2">
           Don't have an account?{' '}
@@ -77,4 +110,5 @@ const Login = () => {
 };
 
 export default Login;
+
 
