@@ -5,6 +5,7 @@ import Layout from './components/layout/Layout';
 import Home from './pages/Home.jsx';
 import Register from './pages/Register.jsx';
 import Teacher from './pages/Teacher.jsx';
+import StudentDashboard from './pages/StudentDashboard'
 import Error from './pages/Error.jsx'; // Assuming you have an Error component for handling route errors
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
@@ -19,6 +20,7 @@ const router = createBrowserRouter([
     children: [
       { index: true, element: <Home /> },
       { path: "register", element: <Register /> },
+      { path: "studendashboard", element: <StudentDashboard />}
       { path: "teacher", element: <Teacher /> },
       {path: "logout",element:<Logout/> },
     ]
