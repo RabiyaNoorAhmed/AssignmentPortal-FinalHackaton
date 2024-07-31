@@ -1,10 +1,9 @@
 import React, { useState } from 'react';
 import { CssBaseline, Box, Drawer, List, ListItem, ListItemText, ListItemIcon, IconButton, useMediaQuery, useTheme, Toolbar } from '@mui/material';
-import MenuIcon from '@mui/icons-material/Menu';
+
 import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
 import ChevronRightIcon from '@mui/icons-material/ChevronRight';
 import DashboardIcon from '@mui/icons-material/Dashboard';
-import DescriptionIcon from '@mui/icons-material/Description';
 import EventNoteIcon from '@mui/icons-material/EventNote';
 import NoteIcon from '@mui/icons-material/Note';
 import AssignmentIcon from '@mui/icons-material/Assignment';
@@ -12,7 +11,6 @@ import ChatIcon from '@mui/icons-material/Chat';
 import GradeIcon from '@mui/icons-material/Grade'; // Import the new icon
 import SettingsIcon from '@mui/icons-material/Settings';
 import Dashboard from '../components/teacher/Dashboard';
-import CourseOutline from '../components/teacher/CourseOutline';
 import LectureNotes from '../components/teacher/LectureNotes';
 import Assignments from '../components/teacher/Assignments';
 import Chat from '../components/teacher/Chat';
@@ -24,7 +22,7 @@ const collapsedDrawerWidth = 60;
 
 const componentMap = {
   'Dashboard': <Dashboard />,
-  'Course Outline': <CourseOutline />,
+  // 'Course Outline': <CourseOutline />,
   'Lecture Notes': <LectureNotes />,
   'Assignments': <Assignments />,
   'Marking': <Marking />,
@@ -34,7 +32,7 @@ const componentMap = {
 
 const iconMap = {
   'Dashboard': <DashboardIcon />,
-  'Course Outline': <DescriptionIcon />,
+  // 'Course Outline': <DescriptionIcon />,
   'Course Plan': <EventNoteIcon />,
   'Lecture Notes': <NoteIcon />,
   'Assignments': <AssignmentIcon />,
