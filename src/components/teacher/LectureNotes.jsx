@@ -55,7 +55,7 @@ const NotesTable = () => {
       const response = await axios.get(`${import.meta.env.VITE_BASE_URL}/notes/filter?course=${selectedCourse}&batch=${selectedBatch}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
-
+      setNotes(response.data);
     } catch (error) {
       console.error('Failed to fetch notes:', error);
 

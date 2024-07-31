@@ -12,7 +12,6 @@ import ChatIcon from '@mui/icons-material/Chat';
 import GradeIcon from '@mui/icons-material/Grade'; // Import the new icon
 import SettingsIcon from '@mui/icons-material/Settings';
 import Dashboard from '../components/teacher/Dashboard';
-import CourseOutline from '../components/teacher/CourseOutline';
 import LectureNotes from '../components/teacher/LectureNotes';
 import Assignments from '../components/teacher/Assignments';
 import Chat from '../components/teacher/Chat';
@@ -24,7 +23,6 @@ const collapsedDrawerWidth = 60;
 
 const componentMap = {
   'Dashboard': <Dashboard />,
-  'Course Outline': <CourseOutline />,
   'Lecture Notes': <LectureNotes />,
   'Assignments': <Assignments />,
   'Marking': <Marking />,
@@ -34,7 +32,6 @@ const componentMap = {
 
 const iconMap = {
   'Dashboard': <DashboardIcon />,
-  'Course Outline': <DescriptionIcon />,
   'Course Plan': <EventNoteIcon />,
   'Lecture Notes': <NoteIcon />,
   'Assignments': <AssignmentIcon />,
