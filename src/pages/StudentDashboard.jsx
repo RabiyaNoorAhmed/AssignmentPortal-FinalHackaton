@@ -98,7 +98,7 @@ export default function StudentDashboard() {
                           fontSize: isSmallScreen ? '14px' : '16px',
                         }}
                       >
-                        <MenuItem value="" disabled>Select Batch</MenuItem>
+                        <MenuItem value="" >Select Batch</MenuItem>
                         <MenuItem value="Batch 11">Batch 11</MenuItem>
                         <MenuItem value="Batch 12">Batch 12</MenuItem>
                         <MenuItem value="Batch 13">Batch 13</MenuItem>
@@ -129,6 +129,7 @@ export default function StudentDashboard() {
   };
 
   return (
+    
     <Box sx={{ display: 'flex', marginTop: '100px' }}>
       <CssBaseline />
       <Sidebar drawerOpen={drawerOpen} toggleDrawer={toggleDrawer} setSelectedSection={setSelectedSection} />

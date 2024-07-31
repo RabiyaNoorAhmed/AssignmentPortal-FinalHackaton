@@ -97,7 +97,8 @@ export default function Sidebar({ drawerOpen, toggleDrawer, setSelectedSection, 
             boxSizing: 'border-box',
             marginTop: '75px', // Adjusted margin top
             transition: 'width 0.3s',
-            overflowX: 'hidden', // Prevent horizontal scrolling
+            overflowX: 'hidden',
+            background: 'red' // Prevent horizontal scrolling
           },
         }}
       >

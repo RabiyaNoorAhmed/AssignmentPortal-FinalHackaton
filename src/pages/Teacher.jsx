@@ -22,7 +22,6 @@ const collapsedDrawerWidth = 60;
 
 const componentMap = {
   'Dashboard': <Dashboard />,
-  // 'Course Outline': <CourseOutline />,
   'Lecture Notes': <LectureNotes />,
   'Assignments': <Assignments />,
   'Marking': <Marking />,
@@ -32,7 +31,6 @@ const componentMap = {
 
 const iconMap = {
   'Dashboard': <DashboardIcon />,
-  // 'Course Outline': <DescriptionIcon />,
   'Course Plan': <EventNoteIcon />,
   'Lecture Notes': <NoteIcon />,
   'Assignments': <AssignmentIcon />,
