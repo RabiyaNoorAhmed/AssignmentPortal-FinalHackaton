@@ -1,10 +1,9 @@
 import React, { useState } from 'react';
 import { CssBaseline, Box, Drawer, List, ListItem, ListItemText, ListItemIcon, IconButton, useMediaQuery, useTheme, Toolbar } from '@mui/material';
-import MenuIcon from '@mui/icons-material/Menu';
+
 import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
 import ChevronRightIcon from '@mui/icons-material/ChevronRight';
 import DashboardIcon from '@mui/icons-material/Dashboard';
-import DescriptionIcon from '@mui/icons-material/Description';
 import EventNoteIcon from '@mui/icons-material/EventNote';
 import NoteIcon from '@mui/icons-material/Note';
 import AssignmentIcon from '@mui/icons-material/Assignment';
