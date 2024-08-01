@@ -129,7 +129,7 @@ export default function Sidebar({ drawerOpen, toggleDrawer, setSelectedSection, 
             marginTop: '75px', // Adjusted margin top
             transition: 'width 0.3s',
             overflowX: 'hidden',
-            background: 'red' // Prevent horizontal scrolling
+            // background: 'red' // Prevent horizontal scrolling
           },
         }}
       >

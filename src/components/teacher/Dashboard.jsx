@@ -1,29 +1,52 @@
 import React, { useState, useEffect, useContext } from 'react';
-import { Typography, Card, CardContent, Grid, Avatar, CardHeader, Box, MenuItem, FormControl, Select, InputLabel, Dialog, DialogTitle, DialogContent, DialogActions, Button, CircularProgress } from '@mui/material';
+import {
+  Typography, Card, CardContent, Grid, Avatar, CardHeader, Box,
+  MenuItem, FormControl, Select, InputLabel, Dialog, DialogTitle,
+  DialogContent, DialogActions, Button, CircularProgress
+} from '@mui/material';
 import { deepPurple, teal, amber, pink, green, red, blue } from '@mui/material/colors';
 import { CSSTransition } from 'react-transition-group';
-import '../../index.css'; // Import custom styles
 import { UserContext } from '../../context/userContext';
+import axios from 'axios';
+
+const batches = ['Batch 11', 'Batch 12', 'Batch 13', 'Batch 14', 'Batch 15', 'Batch 16', 'Batch 17'];
+const courses = ['Graphics Designing', 'Web and App Development', 'Tecno Kids', 'UI UX Designing', 'Generative Ai & Chatbox', 'Digital Marketing', 'Amazon Mastery'];
 
 function Dashboard() {
   const [teacherInfo, setTeacherInfo] = useState({ name: '', courses: [] });
+  const [selectedCourse, setSelectedCourse] = useState('');
   const [selectedBatch, setSelectedBatch] = useState('');
-  const [filteredData, setFilteredData] = useState({ students: 0, submissions: 0, totalAssignments: 0, missingAssignments: 0 });
-  const { currentUser, setCurrentUser } = useContext(UserContext);
+  const [filteredData, setFilteredData] = useState({
+    students: 0,
+    submissions: 0,
+    totalAssignments: 0,
+    missingAssignments: 0
+  });
+  const { currentUser } = useContext(UserContext);
 
-  // Dialog state management
-  const [openDialog, setOpenDialog] = useState(null);
+  // Backend Total student
+  const [totalStudents, setTotalStudents] = useState(0);
+  const [totalAssignments, setTotalAssignments] = useState(0);
   const [loading, setLoading] = useState(false);
+  const [openDialog, setOpenDialog] = useState(null);
 
   useEffect(() => {
     const fetchData = async () => {
       setLoading(true);
       try {
-        // const response = await fetch('http://localhost:5000/api/teacher');
-        // const data = await response.json();
-        // setTeacherInfo(data);
+        // Fetch teacher info (adjust URL if needed)
+        const response = await axios.get(`${import.meta.env.VITE_BASE_URL}/teacher`);
+        setTeacherInfo(response.data);
+
+        // Fetch total students
+        const studentResponse = await axios.get(`${import.meta.env.VITE_BASE_URL}/students/total-students`);
+        setTotalStudents(studentResponse.data.totalStudents);
+
+        // Fetch total assignments
+        const assignmentResponse = await axios.get(`${import.meta.env.VITE_BASE_URL}/assignments/total-assignments`);
+        setTotalAssignments(assignmentResponse.data.totalAssignments);
       } catch (error) {
-        console.error('Error fetching teacher data:', error);
+        console.error('Error fetching data:', error.response ? error.response.data : error.message);
       } finally {
         setLoading(false);
       }
@@ -33,18 +56,25 @@ function Dashboard() {
   }, []);
 
   useEffect(() => {
-    if (selectedBatch) {
-      const selectedCourse = teacherInfo.courses.find(course => course.title === selectedBatch);
-      if (selectedCourse) {
-        setFilteredData({
-          students: selectedCourse.students,
-          submissions: selectedCourse.submissions,
-          totalAssignments: selectedCourse.totalAssignments,
-          missingAssignments: selectedCourse.missingAssignments
-        });
+    if (selectedCourse && selectedBatch) {
+      const selectedCourseData = teacherInfo.courses.find(course => course.title === selectedCourse);
+      if (selectedCourseData) {
+        const batchData = selectedCourseData.batches.find(batch => batch.name === selectedBatch);
+        if (batchData) {
+          setFilteredData({
+            students: batchData.students,
+            submissions: batchData.submissions,
+            totalAssignments: batchData.totalAssignments,
+            missingAssignments: batchData.missingAssignments
+          });
+        }
       }
     }
-  }, [selectedBatch, teacherInfo]);
+  }, [selectedCourse, selectedBatch, teacherInfo]);
+
+  const handleCourseChange = (event) => {
+    setSelectedCourse(event.target.value);
+  };
 
   const handleBatchChange = (event) => {
     setSelectedBatch(event.target.value);
@@ -58,23 +88,18 @@ function Dashboard() {
     setOpenDialog(null);
   };
 
-  const handleLogout = () => {
-    // Implement logout functionality
-    console.log('Logout button clicked');
-  };
-
   const activeCourses = teacherInfo.courses.filter(course => course.active).length;
   const totalCourses = teacherInfo.courses.length;
 
   return (
-    <Box sx={{ p: 2, }}>
+    <Box sx={{ p: 2 }}>
       <Typography variant="h3" gutterBottom>
         Dashboard
       </Typography>
       <Grid container spacing={2}>
         <Grid item xs={12} md={12}>
           {currentUser && (
-            <Box sx={{ alignItems: 'center', mb: 1 }}>
+            <Box sx={{ alignItems: 'center', mb: 1, backgroundColor: '#c6d9fe', padding: '10px', borderRadius: '5px', boxShadow: 'rgba(0, 0, 0, 0.35) 0px 5px 15px' }}>
               <Avatar alt={currentUser.name} src={currentUser.avatar} sx={{ width: 100, height: 100, marginRight: 1 }} />
               <br />
               <Typography variant="body1" sx={{ marginRight: 2, color: 'black', fontSize: '30px' }}>
@@ -83,18 +108,31 @@ function Dashboard() {
             </Box>
           )}
 
-          <Box sx={{ mt: 2 }}>
+          <Box sx={{ mt: 2, mb: 2 }}>
             <FormControl fullWidth>
-              <InputLabel id="batch-select-label">Select Batch</InputLabel>
+              <InputLabel>Course</InputLabel>
               <Select
-                labelId="batch-select-label"
-                id="batch-select"
-                value={selectedBatch}
-                label="Select Batch"
-                onChange={handleBatchChange}
+                value={selectedCourse}
+                onChange={handleCourseChange}
+                label="Course"
               >
-                {teacherInfo.courses.map((course, index) => (
-                  <MenuItem key={index} value={course.title}>{course.title}</MenuItem>
+                {courses.map(course => (
+                  <MenuItem key={course} value={course}>{course}</MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+          </Box>
+
+          <Box sx={{ mb: 2 }}>
+            <FormControl fullWidth>
+              <InputLabel>Batch</InputLabel>
+              <Select
+                value={selectedBatch}
+                onChange={handleBatchChange}
+                label="Batch"
+              >
+                {batches.map(batch => (
+                  <MenuItem key={batch} value={batch}>{batch}</MenuItem>
                 ))}
               </Select>
             </FormControl>
@@ -132,7 +170,7 @@ function Dashboard() {
                 </Avatar>
               }
               title="Total Students"
-              subheader={filteredData.students}
+              subheader={loading ? <CircularProgress size={24} /> : totalStudents}
             />
           </Card>
         </Grid>
@@ -150,7 +188,7 @@ function Dashboard() {
                 </Avatar>
               }
               title="Total Assignments"
-              subheader={filteredData.totalAssignments}
+              subheader={loading ? <CircularProgress size={24} /> : totalAssignments}
             />
           </Card>
         </Grid>
@@ -241,3 +279,11 @@ function Dashboard() {
 }
 
 export default Dashboard;
+
+
+
+
+
+
+
+
