@@ -14,11 +14,13 @@ import SettingsIcon from '@mui/icons-material/Settings';
 import Dashboard from '../components/teacher/Dashboard';
 import LectureNotes from '../components/teacher/LectureNotes';
 import Assignments from '../components/teacher/Assignments';
-import Chat from '../components/chatapp/Chat';
+import Chat from '../components/teacher/Chat';
 import Header from '../components/header/Header';
 import Marking from '../components/teacher/Marking';
 import UserProfile from '../components/userprofile/UserProfile';
 import "./StudentDashboard.css"; 
+import MenuIcon from '@mui/icons-material/Menu';
+import CloseIcon from '@mui/icons-material/Close';
 
 const drawerWidth = 210;
 const collapsedDrawerWidth = 60;
@@ -34,7 +36,7 @@ const componentMap = {
 
 const iconMap = {
   'Dashboard': <DashboardIcon />,
-  'Course Outline': <DescriptionIcon />,
+  // 'Course Outline': <DescriptionIcon />,
   'Lecture Notes': <NoteIcon />,
   'Assignments': <AssignmentIcon />,
   'Marking': <GradeIcon />,
@@ -74,7 +76,7 @@ function Teacher() {
       }}
       role="presentation"
     >
-      <List>
+      <List sx={{mt:3}}>
         {Object.keys(componentMap).map((text) => (
           <ListItem
             button
@@ -112,7 +114,7 @@ function Teacher() {
             '& .MuiDrawer-paper': {
               width: drawerOpen ? drawerWidth : collapsedDrawerWidth,
               boxSizing: 'border-box',
-              mt: 8, // Adjust margin-top to fit your header height
+              mt: 9, // Adjust margin-top to fit your header height
               transition: 'width 0.3s ease', // Smooth transition for width change
               overflowX: 'hidden', // Prevent horizontal scrolling
             },
@@ -132,7 +134,7 @@ function Teacher() {
             [`& .MuiDrawer-paper`]: {
               width: drawerOpen ? drawerWidth : collapsedDrawerWidth,
               boxSizing: 'border-box',
-              mt: 8, // Adjust margin-top to fit your header height
+              mt: 10, // Adjust margin-top to fit your header height
               transition: 'width 0.3s ease', // Smooth transition for width change
               overflowX: 'hidden', // Prevent horizontal scrolling
             },
@@ -150,7 +152,7 @@ function Teacher() {
             onClick={handleDrawerToggle}
             sx={{ mt: 1, mr: 2, color: 'silver', position: 'fixed', top: 65, left: 16, zIndex: 1201 }} // Adjusted margin and position
           >
-            {mobileOpen ? <ChevronLeftIcon /> : <ChevronRightIcon />}
+            {mobileOpen ? <CloseIcon />:  <MenuIcon />}
           </IconButton>
         )}
 
