@@ -6,6 +6,8 @@ import Sidebar from './SideBar'; // Import Sidebar component
 import AssignmentPreview from './AssignmentPreview'; // Import the AssignmentPreview component
 import SubmitAssignment from './SubmitAssignment'; // Import the SubmitAssignment component
 import Notes from './Notes';//Import Notes component
+import Course from './Course';
+import MarkingStu from './MarkingStu';
 import Header from '../components/header/Header';
 import Loader from '../components/loader/Loader'; // Import Loader component
 import UserProfile from '../components/userprofile/UserProfile'; // Import UserProfile component
@@ -54,8 +56,12 @@ export default function StudentDashboard() {
         return <SubmitAssignment deadline={deadline} />;
       case 'User Profile':
         return <UserProfile />;
-        case 'Notes Lectures':
+      case 'Notes Lectures':
         return <Notes />;
+      case 'Course':
+        return <Course />;
+      case 'MarkingStu':
+        return <MarkingStu />;
       default:
         return (
           <>

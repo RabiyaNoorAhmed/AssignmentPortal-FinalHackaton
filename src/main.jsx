@@ -25,7 +25,7 @@ const router = createBrowserRouter([
       { path: "student", element: <StudentDashboard />},
       { path: "teacher", element: <Teacher /> },
       {path: "logout",element:<Logout/> },
-      {path: "notes",element:<Notes /> },
+      
     ]
   }
 ]);

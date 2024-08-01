@@ -4,6 +4,7 @@ import { FileUpload as FileUploadIcon, Link as LinkIcon, Image as ImageIcon } fr
 import "./StudentDashboard.css";
 
 const SubmitAssignment = () => {
+  const [studentName, setStudentName] = useState('');
   const [rollNumber, setRollNumber] = useState('');
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
@@ -19,7 +20,7 @@ const SubmitAssignment = () => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (rollNumber && title && description &&
+    if (studentName && rollNumber && title && description &&
         ((submissionType === 'file' && file) ||
          (submissionType === 'link' && link) ||
          (submissionType === 'both' && file && link))) {
@@ -32,6 +33,7 @@ const SubmitAssignment = () => {
 
   const handleUnsubmit = () => {
     // Logic to unsubmit the assignment
+    setStudentName('');
     setRollNumber('');
     setTitle('');
     setDescription('');
@@ -57,6 +59,14 @@ const SubmitAssignment = () => {
           fullWidth
           value={rollNumber}
           onChange={(e) => setRollNumber(e.target.value)}
+          required
+          disabled={isSubmitted} // Disable fields if already submitted
+        />
+        <TextField
+          label="Student Name"
+          fullWidth
+          value={studentName}
+          onChange={(e) => setStudentName(e.target.value)}
           required
           disabled={isSubmitted} // Disable fields if already submitted
         />
