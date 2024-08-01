@@ -12,6 +12,8 @@ import 'react-toastify/dist/ReactToastify.css';
 import Logout from './pages/Logout.jsx';
 import './index.css';
 import UserProvider from './context/userContext'
+import Notes from './pages/Notes';
+
 const router = createBrowserRouter([
   {
     path: "/",
@@ -23,6 +25,7 @@ const router = createBrowserRouter([
       { path: "student", element: <StudentDashboard />},
       { path: "teacher", element: <Teacher /> },
       {path: "logout",element:<Logout/> },
+      {path: "notes",element:<Notes /> },
     ]
   }
 ]);

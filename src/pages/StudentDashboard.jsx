@@ -5,6 +5,7 @@ import {
 import Sidebar from './SideBar'; // Import Sidebar component
 import AssignmentPreview from './AssignmentPreview'; // Import the AssignmentPreview component
 import SubmitAssignment from './SubmitAssignment'; // Import the SubmitAssignment component
+import Notes from './Notes';//Import Notes component
 import Header from '../components/header/Header';
 import Loader from '../components/loader/Loader'; // Import Loader component
 import UserProfile from '../components/userprofile/UserProfile'; // Import UserProfile component
@@ -35,7 +36,7 @@ export default function StudentDashboard() {
     setTimeout(() => {
       setSelectedSection(section);
       setLoading(false); // Hide loader after section change
-    }, 500); // Simulate delay
+    }, 500); //  delay
   };
 
   const renderContent = () => {
@@ -53,6 +54,8 @@ export default function StudentDashboard() {
         return <SubmitAssignment deadline={deadline} />;
       case 'User Profile':
         return <UserProfile />;
+        case 'Notes Lectures':
+        return <Notes />;
       default:
         return (
           <>

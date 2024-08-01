@@ -3,7 +3,7 @@ import {
   Drawer, List, ListItem, ListItemIcon, ListItemText, Divider, IconButton, useMediaQuery, useTheme
 } from '@mui/material';
 import {
-  Assignment, Assessment, Notifications, Person, Help, ExitToApp, Menu as MenuIcon, ChevronLeft, Dashboard, MoreVert, Close
+  Assignment, Book, Chat, Person, Help, ExitToApp, Menu as MenuIcon, ChevronLeft, Dashboard, MoreVert, Close
 } from '@mui/icons-material';
 import UserProfile from '../components/userprofile/UserProfile'; // Import your UserProfile component
 
@@ -49,17 +49,11 @@ export default function Sidebar({ drawerOpen, toggleDrawer, setSelectedSection, 
           </ListItemIcon>
           <ListItemText primary="Submit Assignment" />
         </ListItem>
-        <ListItem button>
+        <ListItem button onClick={() => handleSectionChange('Notes Lectures')}>
           <ListItemIcon>
-            <Assessment />
+            <Book />
           </ListItemIcon>
-          <ListItemText primary="Notes/Lectures" />
-        </ListItem>
-        <ListItem button>
-          <ListItemIcon>
-            <Notifications />
-          </ListItemIcon>
-          <ListItemText primary="Notifications" />
+          <ListItemText primary="Notes Lectures" />
         </ListItem>
         <ListItem button onClick={() => handleSectionChange('User Profile')}>
           <ListItemIcon>
@@ -69,15 +63,9 @@ export default function Sidebar({ drawerOpen, toggleDrawer, setSelectedSection, 
         </ListItem>
         <ListItem button>
           <ListItemIcon>
-            <Help />
+            <Chat />
           </ListItemIcon>
-          <ListItemText primary="Help/Support" />
-        </ListItem>
-        <ListItem button>
-          <ListItemIcon>
-            <ExitToApp />
-          </ListItemIcon>
-          <ListItemText primary="Logout" />
+          <ListItemText primary="Chat" />
         </ListItem>
       </List>
     </>
