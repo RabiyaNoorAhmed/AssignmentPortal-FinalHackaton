@@ -22,8 +22,8 @@ import { BarChart, Bar, XAxis, YAxis, Tooltip, Legend, CartesianGrid } from 'rec
 import LockIcon from '@mui/icons-material/Lock';
 import LockOpenIcon from '@mui/icons-material/LockOpen';
 
-const courses = ['Math', 'History', 'Science'];
-const batches = ['Batch A', 'Batch B', 'Batch C'];
+const courses = ['Graphics Designing', 'Web and App Development', 'Tecno Kids', 'UI UX Designing', 'Generative Ai & Chatbox', 'Digital Marketing', 'Amazon Mastery'];
+const batches = ['Batch 11', 'Batch 12', 'Batch 13', 'Batch 14', 'Batch 15', 'Batch 16', 'Batch 17'];
 
 const initialAssignments = [
   { id: 1, title: 'Math Homework', totalMarks: 50, locked: false },

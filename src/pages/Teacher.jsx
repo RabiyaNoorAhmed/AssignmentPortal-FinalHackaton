@@ -5,7 +5,6 @@ import {
 import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
 import ChevronRightIcon from '@mui/icons-material/ChevronRight';
 import DashboardIcon from '@mui/icons-material/Dashboard';
-import DescriptionIcon from '@mui/icons-material/Description';
 import EventNoteIcon from '@mui/icons-material/EventNote';
 import NoteIcon from '@mui/icons-material/Note';
 import AssignmentIcon from '@mui/icons-material/Assignment';
@@ -13,7 +12,6 @@ import ChatIcon from '@mui/icons-material/Chat';
 import GradeIcon from '@mui/icons-material/Grade';
 import SettingsIcon from '@mui/icons-material/Settings';
 import Dashboard from '../components/teacher/Dashboard';
-import CourseOutline from '../components/teacher/CourseOutline';
 import LectureNotes from '../components/teacher/LectureNotes';
 import Assignments from '../components/teacher/Assignments';
 import Chat from '../components/chatapp/Chat';
@@ -27,7 +25,6 @@ const collapsedDrawerWidth = 60;
 
 const componentMap = {
   'Dashboard': <Dashboard />,
-  'Course Outline': <CourseOutline />,
   'Lecture Notes': <LectureNotes />,
   'Assignments': <Assignments />,
   'Marking': <Marking />,

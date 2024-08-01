@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import axios from 'axios';
 import {
   Table,
   TableBody,
@@ -16,58 +17,40 @@ import {
   IconButton,
   Typography,
   Box,
-  Divider,
   FormControl,
   InputLabel,
   Select,
   MenuItem,
-  useTheme,
 } from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
 import EditIcon from '@mui/icons-material/Edit';
 import AddIcon from '@mui/icons-material/Add';
-import { styled } from '@mui/system';
+import Loader from '../loader/Loader'; // Import your loader component
 
-const courses = ['Graphics Designing', 'Web and App Development', 'Tecno Kids', 'UI UX Designing', 'Generative Ai & Chatbox', 'Digital Marketing', 'Amazon Mastery'];
-const batches = ['Batch 11', 'Batch 12', 'Batch 13', 'Batch 14', 'Batch 15', 'Batch 16', 'Batch 17'];
-const acceptedFileTypes = ['application/pdf', 'image/jpeg', 'image/png', 'image/gif'];
-
-const initialAssignments = {
-  'Math': {
-    'Batch A': [
-      { id: 1, title: 'Math Homework', dueDate: '2024-08-01', description: 'Complete exercises from chapter 5.', link: '', file: '', totalMarks: 50 },
-    ],
-    'Batch B': [],
-  },
-  'History': {
-    'Batch A': [
-      { id: 2, title: 'History Essay', dueDate: '2024-08-05', description: 'Write an essay on the Renaissance period.', link: '', file: '', totalMarks: 100 },
-    ],
-    'Batch B': [],
-  },
-  'Science': {
-    'Batch C': [
-      { id: 3, title: 'Science Project', dueDate: '2024-08-10', description: 'Prepare a project on renewable energy.', link: '', file: '', totalMarks: 75 },
-    ],
-  },
-};
-
-const StyledTableCell = styled(TableCell)({
-  fontWeight: 'bold',
-  fontSize: '1rem',
-});
-
-const StyledTableRow = styled(TableRow)({
-  '&:nth-of-type(even)': {
-    backgroundColor: '#f9f9f9',
-  },
-});
-
-const AssignmentDialog = styled(Dialog)({
-  '& .MuiDialog-paper': {
-    padding: '16px',
-  },
-});
+const courses = [
+  'Graphics Designing',
+  'Web and App Development',
+  'Tecno Kids',
+  'UI UX Designing',
+  'Generative Ai & Chatbox',
+  'Digital Marketing',
+  'Amazon Mastery',
+];
+const batches = [
+  'Batch 11',
+  'Batch 12',
+  'Batch 13',
+  'Batch 14',
+  'Batch 15',
+  'Batch 16',
+  'Batch 17',
+];
+const acceptedFileTypes = [
+  'application/pdf',
+  'image/jpeg',
+  'image/png',
+  'image/gif',
+];
 
 const Assignments = () => {
   const [selectedCourse, setSelectedCourse] = useState('');
@@ -75,7 +58,46 @@ const Assignments = () => {
   const [assignments, setAssignments] = useState([]);
   const [openDialog, setOpenDialog] = useState(false);
   const [currentAssignment, setCurrentAssignment] = useState(null);
-  const [newAssignment, setNewAssignment] = useState({ title: '', dueDate: '', description: '', link: '', file: null, totalMarks: 0 });
+  const [newAssignment, setNewAssignment] = useState({
+    title: '',
+    dueDate: '',
+    description: '',
+    link: '',
+    file: null,
+    totalMarks: 0,
+  });
+  const [loading, setLoading] = useState(false); // Loading state
+  const [showLoader, setShowLoader] = useState(false); // State for showing loader
+
+  const token = localStorage.getItem('authToken'); // Adjust this based on how you store your token
+
+  useEffect(() => {
+    if (selectedCourse && selectedBatch) {
+      fetchAssignments();
+    }
+  }, [selectedCourse, selectedBatch]);
+
+  const fetchAssignments = async () => {
+    try {
+      setLoading(true); // Start loading
+      setShowLoader(true); // Show loader
+      const response = await axios.get(
+        `${import.meta.env.VITE_BASE_URL}/assignments/filter?course=${selectedCourse}&batch=${selectedBatch}`,
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+      setAssignments(response.data);
+    } catch (error) {
+      console.error('Failed to fetch assignments:', error);
+    } finally {
+      // Ensure the loader is displayed for at least 3 seconds
+      setTimeout(() => {
+        setLoading(false); // Stop loading
+        setShowLoader(false); // Hide loader
+      }, 3000);
+    }
+  };
 
   const handleCourseChange = (event) => {
     setSelectedCourse(event.target.value);
@@ -85,12 +107,16 @@ const Assignments = () => {
 
   const handleBatchChange = (event) => {
     setSelectedBatch(event.target.value);
-    setAssignments(initialAssignments[selectedCourse]?.[event.target.value] || []);
+    setAssignments([]);
   };
 
   const handleOpenDialog = (assignment = null) => {
-    setCurrentAssignment(assignment);
-    setNewAssignment(assignment ? { ...assignment } : { title: '', dueDate: '', description: '', link: '', file: null, totalMarks: 0 });
+    setCurrentAssignment(assignment); // Store the assignment being edited
+    setNewAssignment(
+      assignment
+        ? { ...assignment, file: null }
+        : { title: '', dueDate: '', description: '', link: '', file: null, totalMarks: 0 }
+    );
     setOpenDialog(true);
   };
 
@@ -98,54 +124,115 @@ const Assignments = () => {
     setOpenDialog(false);
   };
 
-  const handleSave = () => {
-    if (currentAssignment) {
-      setAssignments(assignments.map(assignment => (assignment.id === currentAssignment.id ? newAssignment : assignment)));
-    } else {
-      setAssignments([...assignments, { ...newAssignment, id: assignments.length + 1 }]);
+  const handleSave = async () => {
+    try {
+      const formData = new FormData();
+      formData.append('title', newAssignment.title);
+      formData.append('dueDate', newAssignment.dueDate);
+      formData.append('description', newAssignment.description);
+      formData.append('link', newAssignment.link);
+      formData.append('totalMarks', newAssignment.totalMarks);
+      formData.append('course', selectedCourse);
+      formData.append('batch', selectedBatch);
+
+      if (newAssignment.file) {
+        formData.append('file', newAssignment.file);
+      }
+
+      if (currentAssignment && currentAssignment._id) {
+        const response = await axios.patch(
+          `${import.meta.env.VITE_BASE_URL}/assignments/${currentAssignment._id}`,
+          formData,
+          {
+            headers: {
+              'Content-Type': 'multipart/form-data',
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+        console.log('Assignment updated:', response.data);
+      } else {
+        const response = await axios.post(
+          `${import.meta.env.VITE_BASE_URL}/assignments`,
+          formData,
+          {
+            headers: {
+              'Content-Type': 'multipart/form-data',
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+        console.log('Assignment created:', response.data);
+      }
+
+      fetchAssignments();
+      handleCloseDialog();
+    } catch (error) {
+      console.error('Failed to save assignment:', error);
+      alert(
+        `Failed to save assignment: ${error.response?.data?.message || error.message}`
+      );
     }
-    handleCloseDialog();
   };
 
-  const handleDelete = (id) => {
-    setAssignments(assignments.filter(assignment => assignment.id !== id));
+  const handleDelete = async (id) => {
+    try {
+      const response = await axios.delete(
+        `${import.meta.env.VITE_BASE_URL}/assignments/${id}`,
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+      console.log('Assignment deleted:', response.data);
+      fetchAssignments(); // Refresh the list after deletion
+    } catch (error) {
+      console.error('Failed to delete assignment:', error);
+      alert(
+        `Failed to delete assignment: ${error.response?.data?.message || error.message}`
+      );
+    }
   };
 
   const handleFileChange = (event) => {
-    setNewAssignment({ ...newAssignment, file: event.target.files[0] });
+    const file = event.target.files[0];
+
+    if (file) {
+      if (acceptedFileTypes.includes(file.type)) {
+        setNewAssignment({ ...newAssignment, file });
+      } else {
+        alert('Invalid file type. Please select a PDF or image file.');
+      }
+    }
   };
 
   return (
     <Box sx={{ p: 3, display: 'flex', flexDirection: 'column', gap: 3 }}>
-    <Typography variant="h4" gutterBottom>
+      <Typography variant="h4" gutterBottom>
         Assignments
       </Typography>
       <Box sx={{ display: 'flex', gap: 2, mb: 2 }}>
         <FormControl fullWidth>
           <InputLabel>Course</InputLabel>
-          <Select
-            value={selectedCourse}
-            onChange={handleCourseChange}
-            label="Course"
-          >
-            {courses.map(course => (
-              <MenuItem key={course} value={course}>{course}</MenuItem>
+          <Select value={selectedCourse} onChange={handleCourseChange} label="Course">
+            {courses.map((course) => (
+              <MenuItem key={course} value={course}>
+                {course}
+              </MenuItem>
             ))}
           </Select>
         </FormControl>
         <FormControl fullWidth disabled={!selectedCourse}>
           <InputLabel>Batch</InputLabel>
-          <Select
-            value={selectedBatch}
-            onChange={handleBatchChange}
-            label="Batch"
-          >
-            {batches.map(batch => (
-              <MenuItem key={batch} value={batch}>{batch}</MenuItem>
+          <Select value={selectedBatch} onChange={handleBatchChange} label="Batch">
+            {batches.map((batch) => (
+              <MenuItem key={batch} value={batch}>
+                {batch}
+              </MenuItem>
             ))}
           </Select>
         </FormControl>
       </Box>
+
       {selectedCourse && selectedBatch && (
         <>
           <Button
@@ -157,118 +244,139 @@ const Assignments = () => {
           >
             Add Assignment
           </Button>
-          <br /><br />
-          <TableContainer component={Paper} elevation={3} sx={{ borderRadius: '12px' }}>
-            <Table>
-              <TableHead>
-                <TableRow>
-                  <StyledTableCell>Title</StyledTableCell>
-                  <StyledTableCell>Due Date</StyledTableCell>
-                  <StyledTableCell>Description</StyledTableCell>
-                  <StyledTableCell>Link</StyledTableCell>
-                  <StyledTableCell>File</StyledTableCell>
-                  <StyledTableCell>Total Marks</StyledTableCell>
-                  <StyledTableCell>Actions</StyledTableCell>
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                {assignments.map(assignment => (
-                  <StyledTableRow key={assignment.id}>
-                    <TableCell>{assignment.title}</TableCell>
-                    <TableCell>{assignment.dueDate}</TableCell>
-                    <TableCell>{assignment.description}</TableCell>
-                    <TableCell>{assignment.link ? <a href={assignment.link} target="_blank" rel="noopener noreferrer">{assignment.link}</a> : 'N/A'}</TableCell>
-                    <TableCell>{assignment.file ? <a href={URL.createObjectURL(assignment.file)} target="_blank" rel="noopener noreferrer">View File</a> : 'N/A'}</TableCell>
-                    <TableCell>{assignment.totalMarks}</TableCell>
-                    <TableCell>
-                      <IconButton color="primary" onClick={() => handleOpenDialog(assignment)}>
-                        <EditIcon />
-                      </IconButton>
-                      <IconButton color="error" onClick={() => handleDelete(assignment.id)}>
-                        <DeleteIcon />
-                      </IconButton>
-                    </TableCell>
-                  </StyledTableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </TableContainer>
+          <br />
+          <br />
+          {showLoader ? (
+            <Loader />
+          ) : (
+            <TableContainer component={Paper} elevation={3} sx={{ borderRadius: '12px' }}>
+              <Table>
+                <TableHead>
+                  <TableRow>
+                    <TableCell>Title</TableCell>
+                    <TableCell>Due Date</TableCell>
+                    <TableCell>Description</TableCell>
+                    <TableCell>Link</TableCell>
+                    <TableCell>File</TableCell>
+                    <TableCell>Total Marks</TableCell>
+                    <TableCell>Actions</TableCell>
+                  </TableRow>
+                </TableHead>
+                <TableBody>
+                  {assignments.map((assignment) => (
+                    <TableRow key={assignment._id}>
+                      <TableCell>{assignment.title}</TableCell>
+                      <TableCell>{assignment.dueDate}</TableCell>
+                      <TableCell>{assignment.description}</TableCell>
+                      <TableCell>
+                        {assignment.link ? (
+                          <a href={assignment.link} target="_blank" rel="noopener noreferrer">
+                            {assignment.link}
+                          </a>
+                        ) : (
+                          ''
+                        )}
+                      </TableCell>
+                      <TableCell>
+                        {assignment.file ? (
+                          <a href={assignment.file} target="_blank" rel="noopener noreferrer">
+                            View File
+                          </a>
+                        ) : (
+                          'No file'
+                        )}
+                      </TableCell>
+                      <TableCell>{assignment.totalMarks}</TableCell>
+                      <TableCell>
+                        <IconButton
+                          color="primary"
+                          onClick={() => handleOpenDialog(assignment)}
+                          sx={{ marginRight: '8px' }}
+                        >
+                          <EditIcon />
+                        </IconButton>
+                        <IconButton color="secondary" onClick={() => handleDelete(assignment._id)}>
+                          <DeleteIcon />
+                        </IconButton>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+
+              </Table>
+            </TableContainer>
+          )}
         </>
       )}
 
-      <AssignmentDialog open={openDialog} onClose={handleCloseDialog}>
+      <Dialog open={openDialog} onClose={handleCloseDialog}>
         <DialogTitle>{currentAssignment ? 'Edit Assignment' : 'Add Assignment'}</DialogTitle>
-        <Divider />
         <DialogContent>
           <TextField
+            autoFocus
+            margin="dense"
             label="Title"
+            type="text"
             fullWidth
-            margin="normal"
             value={newAssignment.title}
             onChange={(e) => setNewAssignment({ ...newAssignment, title: e.target.value })}
-            variant="outlined"
-            sx={{ mb: 2 }}
           />
           <TextField
+            margin="dense"
             label="Due Date"
             type="date"
             fullWidth
-            margin="normal"
             value={newAssignment.dueDate}
             onChange={(e) => setNewAssignment({ ...newAssignment, dueDate: e.target.value })}
-            InputLabelProps={{ shrink: true }}
-            variant="outlined"
-            sx={{ mb: 2 }}
+            InputLabelProps={{
+              shrink: true,
+            }}
           />
           <TextField
+            margin="dense"
             label="Description"
+            type="text"
             fullWidth
-            margin="normal"
             multiline
             rows={4}
             value={newAssignment.description}
             onChange={(e) => setNewAssignment({ ...newAssignment, description: e.target.value })}
-            variant="outlined"
-            sx={{ mb: 2 }}
           />
           <TextField
+            margin="dense"
             label="Link"
+            type="text"
             fullWidth
-            margin="normal"
             value={newAssignment.link}
             onChange={(e) => setNewAssignment({ ...newAssignment, link: e.target.value })}
-            variant="outlined"
-            sx={{ mb: 2 }}
           />
+          <Button variant="outlined" component="label" sx={{ mt: 2 }}>
+            Upload File
+            <input type="file" hidden onChange={handleFileChange} />
+          </Button>
+          <Typography variant="body2" color="textSecondary">
+            {newAssignment.file ? `Selected file: ${newAssignment.file.name}` : 'No file selected'}
+          </Typography>
           <TextField
+            margin="dense"
             label="Total Marks"
             type="number"
             fullWidth
-            margin="normal"
             value={newAssignment.totalMarks}
-            onChange={(e) => setNewAssignment({ ...newAssignment, totalMarks: e.target.value })}
-            variant="outlined"
-            sx={{ mb: 2 }}
+            onChange={(e) =>
+              setNewAssignment({ ...newAssignment, totalMarks: parseInt(e.target.value, 10) })
+            }
           />
-          <Button variant="contained" component="label" fullWidth>
-            Upload File
-            <input
-              type="file"
-              hidden
-              onChange={handleFileChange}
-            />
-          </Button>
-          {newAssignment.file && (
-            <Typography variant="body2" color="textSecondary" sx={{ mt: 2 }}>
-              Selected File: {newAssignment.file.name}
-            </Typography>
-          )}
         </DialogContent>
         <DialogActions>
-          <Button onClick={handleCloseDialog} color="primary">Cancel</Button>
-          <Button onClick={handleSave} color="primary">Save</Button>
+          <Button onClick={handleCloseDialog} color="secondary">
+            Cancel
+          </Button>
+          <Button onClick={handleSave} color="primary" variant="contained">
+            Save
+          </Button>
         </DialogActions>
-      </AssignmentDialog>
+      </Dialog>
     </Box>
   );
 };
