@@ -11,7 +11,7 @@ const Loader = () => {
         // backgroundColor: 'rgba(0, 0, 0, 0.9)',
       }}
     >
-      <img src={LoadingGif} alt="Loading" style={{ width: '25rem', marginTop: '4rem' }} />
+      <img src={LoadingGif} alt="Loading" style={{ width: '20rem', marginTop: '4rem' }} />
     </Backdrop>
   );
 };

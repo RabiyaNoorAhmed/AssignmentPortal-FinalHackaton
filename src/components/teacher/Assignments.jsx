@@ -279,13 +279,9 @@ const Assignments = () => {
                       </TableCell>
                       <TableCell>
                         {assignment.file ? (
-                          assignment.file.url ? (
-                            <a href={assignment.file.url} target="_blank" rel="noopener noreferrer">
-                              View File
-                            </a>
-                          ) : (
-                            'File not available'
-                          )
+                          <a href={assignment.file} target="_blank" rel="noopener noreferrer">
+                            View File
+                          </a>
                         ) : (
                           'No file'
                         )}
@@ -299,16 +295,14 @@ const Assignments = () => {
                         >
                           <EditIcon />
                         </IconButton>
-                        <IconButton
-                          color="secondary"
-                          onClick={() => handleDelete(assignment._id)}
-                        >
+                        <IconButton color="secondary" onClick={() => handleDelete(assignment._id)}>
                           <DeleteIcon />
                         </IconButton>
                       </TableCell>
                     </TableRow>
                   ))}
                 </TableBody>
+
               </Table>
             </TableContainer>
           )}

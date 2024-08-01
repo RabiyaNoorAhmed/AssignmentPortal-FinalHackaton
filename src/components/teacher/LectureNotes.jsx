@@ -125,7 +125,9 @@ const NotesTable = () => {
 
   const handleDelete = async (id) => {
     try {
-      const response = await axios.delete(`${import.meta.env.VITE_BASE_URL}/notes/${id}`);
+      const response = await axios.delete(`${import.meta.env.VITE_BASE_URL}/notes/${id}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
       console.log('Note deleted:', response.data);
       fetchNotes(); // Refresh the list after deletion
     } catch (error) {
