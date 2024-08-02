@@ -1,13 +1,15 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import { Typography, Card, CardContent, Grid, Avatar, CardHeader, Box, MenuItem, FormControl, Select, InputLabel, Dialog, DialogTitle, DialogContent, DialogActions, Button, CircularProgress } from '@mui/material';
 import { deepPurple, teal, amber, pink, green, red, blue } from '@mui/material/colors';
 import { CSSTransition } from 'react-transition-group';
 import '../../index.css'; // Import custom styles
+import { UserContext } from '../../context/userContext';
 
 function Dashboard() {
-  const [teacherInfo, setTeacherInfo] = useState({ name: '', cnic: '', phoneNumber: '', lastQualification: '', courses: [] });
+  const [teacherInfo, setTeacherInfo] = useState({ name: '', courses: [] });
   const [selectedBatch, setSelectedBatch] = useState('');
   const [filteredData, setFilteredData] = useState({ students: 0, submissions: 0, totalAssignments: 0, missingAssignments: 0 });
+  const { currentUser, setCurrentUser } = useContext(UserContext);
 
   // Dialog state management
   const [openDialog, setOpenDialog] = useState(null);
@@ -56,34 +58,31 @@ function Dashboard() {
     setOpenDialog(null);
   };
 
+  const handleLogout = () => {
+    // Implement logout functionality
+    console.log('Logout button clicked');
+  };
+
   const activeCourses = teacherInfo.courses.filter(course => course.active).length;
   const totalCourses = teacherInfo.courses.length;
 
   return (
-    <Box sx={{ p: 2 }}>
+    <Box sx={{ p: 2, }}>
       <Typography variant="h3" gutterBottom>
         Dashboard
       </Typography>
-
-      <br />
       <Grid container spacing={2}>
         <Grid item xs={12} md={12}>
-          <Card sx={{ display: 'flex', flexDirection: 'column', backgroundColor: blue[50], mb: 2 }}>
-            <CardHeader
-              avatar={
-                <Avatar sx={{ bgcolor: blue[500], width: 80, height: 80 }}>
-                  {teacherInfo.name.charAt(0)}
-                </Avatar>
-              }
-              title={teacherInfo.name}
-              subheader={teacherInfo.cnic}
-            />
-            <CardContent>
-              <Typography variant="h6">Contact Information</Typography>
-              <Typography variant="body1">Phone: {teacherInfo.phoneNumber}</Typography>
-              <Typography variant="body1">Last Qualification: {teacherInfo.lastQualification}</Typography>
-            </CardContent>
-          </Card>
+          {currentUser && (
+            <Box sx={{ alignItems: 'center', mb: 1 }}>
+              <Avatar alt={currentUser.name} src={currentUser.avatar} sx={{ width: 100, height: 100, marginRight: 1 }} />
+              <br />
+              <Typography variant="body1" sx={{ marginRight: 2, color: 'black', fontSize: '30px' }}>
+                {currentUser.name}
+              </Typography>
+            </Box>
+          )}
+
           <Box sx={{ mt: 2 }}>
             <FormControl fullWidth>
               <InputLabel id="batch-select-label">Select Batch</InputLabel>
@@ -224,7 +223,7 @@ function Dashboard() {
             <DialogTitle>{dialogType.replace(/([A-Z])/g, ' $1').toUpperCase()}</DialogTitle>
             <DialogContent>
               {loading ? (
-                <div className="spinner" />
+                <CircularProgress />
               ) : (
                 <Typography variant="body1">
                   Content for {dialogType.replace(/([A-Z])/g, ' $1').toUpperCase()}
