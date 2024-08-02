@@ -39,6 +39,7 @@ const Login = () => {
 
       toast.success("Login successful!");
 
+      // Navigate based on role
       if (role === 'teacher') {
         navigate('/teacher');
       } else if (role === 'student') {
@@ -125,5 +126,3 @@ const Login = () => {
 };
 
 export default Login;
-
-

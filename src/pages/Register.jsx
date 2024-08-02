@@ -45,6 +45,7 @@ const Register = () => {
   ];
 
   const batches = {
+
     'Graphics Designing': ['Batch 11', 'Batch 12', 'Batch 13', 'Batch 14', 'Batch 15', 'Batch 16', 'Batch 17'],
     'Web and App Development': ['Batch 11', 'Batch 12', 'Batch 13', 'Batch 14', 'Batch 15', 'Batch 16', 'Batch 17'],
     'Tecno Kids': ['Batch 11', 'Batch 12', 'Batch 13', 'Batch 14', 'Batch 15', 'Batch 16', 'Batch 17'],

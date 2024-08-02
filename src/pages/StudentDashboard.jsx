@@ -1,22 +1,49 @@
 import React, { useState, useContext, useEffect } from 'react';
 import axios from 'axios';
 import {
-  Card, Box, Typography, CardHeader, Container, Button, Grid, Avatar, CssBaseline, useMediaQuery, useTheme, CircularProgress
+  Card, Box, Typography, CardHeader, Container, Grid, Avatar, CssBaseline, useMediaQuery, useTheme, CircularProgress
 } from '@mui/material';
 import { pink, blue, red } from '@mui/material/colors';
-import Sidebar from './SideBar'; // Import Sidebar component
-import AssignmentPreview from './AssignmentPreview'; // Import the AssignmentPreview component
-import SubmitAssignment from './SubmitAssignment'; // Import the SubmitAssignment component
-import Notes from './Notes'; // Import Notes component
-import MarkingStu from './MarkingStu';
+import Sidebar from './SideBar';
+import AssignmentPreview from './AssignmentPreview';
+import SubmitAssignment from './SubmitAssignment';
 import Header from '../components/header/Header';
-import Loader from '../components/loader/Loader'; // Import Loader component
-import UserProfile from '../components/userprofile/UserProfile'; // Import UserProfile component
+import Loader from '../components/loader/Loader';
+import UserProfile from '../components/userprofile/UserProfile';
 import './StudentDashboard.css';
 import { UserContext } from '../context/userContext';
 
 export default function StudentDashboard() {
   const [drawerOpen, setDrawerOpen] = useState(false);
+  const [selectedSection, setSelectedSection] = useState('');
+  const [totalAssignments, setTotalAssignments] = useState(0);
+  const [loading, setLoading] = useState(false);
+
+  const { currentUser } = useContext(UserContext);
+
+  useEffect(() => {
+    if (currentUser && currentUser.course && currentUser.batch) {
+      fetchAssignments();
+    } else {
+      console.warn('Current user data is not yet available or incomplete:', currentUser);
+    }
+  }, [currentUser]);
+
+  const fetchAssignments = async () => {
+    setLoading(true);
+    try {
+      const response = await axios.get(`${import.meta.env.VITE_BASE_URL}/assignments/count`, {
+        params: {
+          course: currentUser.course,
+          batch: currentUser.batch
+        }
+      });
+      setTotalAssignments(response.data.totalAssignments || 0);
+    } catch (error) {
+      console.error('Error fetching total assignments:', error.response ? error.response.data : error.message);
+    } finally {
+      setLoading(false);
+    }
   const [selectedCourse, setSelectedCourse] = useState('');
   const [selectedBatch, setSelectedBatch] = useState('');
   const [selectedSection, setSelectedSection] = useState(''); // Track current section
@@ -54,11 +81,14 @@ export default function StudentDashboard() {
     setDrawerOpen((prev) => !prev);
   };
 
-  const handleChange = (setter) => (event) => {
-    setter(event.target.value);
+  const toggleDrawer = () => {
+    setDrawerOpen(prev => !prev);
   };
 
   const handleSectionChange = (section) => {
+
+    setSelectedSection(section);
+
     setLoading(true); // Show loader before changing section
     setTimeout(() => {
       setSelectedSection(section);
@@ -67,18 +97,15 @@ export default function StudentDashboard() {
   };
 
   const renderContent = () => {
+    if (!currentUser) {
+      return <Typography variant="h6">Loading user data...</Typography>;
+    }
+
     switch (selectedSection) {
       case 'view-assignments':
-        return (
-          <AssignmentPreview
-            course={selectedCourse}
-            batch={selectedBatch}
-            onAddAssignment={() => handleSectionChange('submit-assignment')}
-            deadline={deadline} // Passing deadline as prop to AssignmentPreview
-          />
-        );
+        return <AssignmentPreview course={currentUser.course} batch={currentUser.batch} />;
       case 'submit-assignment':
-        return <SubmitAssignment deadline={deadline} />;
+        return <SubmitAssignment />;
       case 'User Profile':
         return <UserProfile />;
       case 'Notes Lectures':
@@ -90,14 +117,15 @@ export default function StudentDashboard() {
           <>
             <Header />
             <Box sx={{ p: 2 }}>
-              <Typography variant="h3" gutterBottom>
-                Dashboard
-              </Typography>
+              <Typography variant="h3" gutterBottom>Dashboard</Typography>
               <Grid container spacing={2}>
                 <Grid item xs={12} md={12}>
                   {currentUser && (
                     <Box sx={{ alignItems: 'center', mb: 1, backgroundColor: '#c6d9fe', padding: '10px', borderRadius: '5px', boxShadow: 'rgba(0, 0, 0, 0.35) 0px 5px 15px' }}>
                       <Avatar alt={currentUser.name} src={currentUser.avatar} sx={{ width: 100, height: 100, marginRight: 1 }} />
+
+                      <Typography variant="body1" sx={{ marginRight: 2, color: 'black', fontSize: '30px' }}>{currentUser.name}</Typography>
+
                       <Typography variant="body1" sx={{ marginRight: 2, color: 'black', fontSize: '30px' }}>
                         {currentUser.name}
                       </Typography>
@@ -111,18 +139,34 @@ export default function StudentDashboard() {
                   )}
                 </Grid>
 
-                {/* Total Assignments Card */}
                 <Grid item xs={12} sm={6} md={4}>
                   <Card
                     sx={{ display: 'flex', alignItems: 'center', backgroundColor: pink[50], cursor: 'pointer' }}
+
+                    onClick={() => handleSectionChange('view-assignments')}
+
+
                   >
                     <CardHeader
                       avatar={
                         <Avatar sx={{ bgcolor: pink[500] }}>
-                          TA
+                          <Typography variant="h6">TA</Typography>
                         </Avatar>
                       }
                       title="Total Assignments"
+
+                      subheader={
+                        loading ? (
+                          <CircularProgress size={24} />
+                        ) : (
+                          <Typography variant="h6">{totalAssignments || 0}</Typography>
+                        )
+                      }
+                    />
+                  </Card>
+                </Grid>
+
+                {/* Other cards */}
                       subheader={loading ? <CircularProgress size={24} /> : totalAssignments}
                     />
                   </Card>
@@ -168,19 +212,11 @@ export default function StudentDashboard() {
 
   return (
     <Box sx={{ display: 'flex', marginTop: '100px' }}>
-      <CssBaseline />
       <Sidebar drawerOpen={drawerOpen} toggleDrawer={toggleDrawer} setSelectedSection={setSelectedSection} />
-      <Box component="main" sx={{ flexGrow: 1, bgcolor: 'background.default', p: isMobile ? 1 : 3 }}>
+      <Box component="main" sx={{ flexGrow: 1, bgcolor: 'background.default', p: 3 }}>
         <Container>
-          <Box
-            sx={{
-              borderRadius: 2,
-              p: isMobile ? 2 : 3,
-              mb: 3,
-              backgroundColor: 'background.paper',
-            }}
-          >
-            {loading ? <Loader /> : renderContent()}
+          <Box sx={{ borderRadius: 2, p: 3, mb: 3, backgroundColor: 'background.paper' }}>
+            {renderContent()}
           </Box>
         </Container>
       </Box>
