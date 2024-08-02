@@ -4,6 +4,7 @@ import axios from 'axios';
 import { toast } from 'react-toastify';
 import { Box, TextField, Button, Container, Typography, Avatar } from '@mui/material';
 import Logo from '../../assets/images/logo.png';
+import Loader from '../../components/loader/Loader'; // Adjust the import path if necessary
 import { UserContext } from '../../context/userContext';
 
 const Login = () => {
@@ -13,6 +14,8 @@ const Login = () => {
     email: '',
     password: ''
   });
+  const [isLoading, setIsLoading] = useState(false); // State to control loading spinner
+  const [showLoader, setShowLoader] = useState(false); // State to manage loader visibility
 
   const handleInputChange = e => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -20,6 +23,8 @@ const Login = () => {
 
   const submitHandler = async (event) => {
     event.preventDefault();
+    setIsLoading(true); // Show loader while request is being processed
+    setShowLoader(true); // Show loader with delay
 
     try {
       const response = await axios.post(`${import.meta.env.VITE_BASE_URL}/users/login`, formData, { withCredentials: true });
@@ -45,8 +50,18 @@ const Login = () => {
       } else {
         toast.error("An error occurred. Please try again.");
       }
+    } finally {
+      // Ensure the loader is displayed for at least 3 seconds
+      setTimeout(() => {
+        setIsLoading(false); // Hide loader after request completes
+        setShowLoader(false); // Hide loader
+      }, 3000);
     }
   };
+
+  if (showLoader) {
+    return <Loader />;
+  }
 
   return (
     <Container maxWidth="xs" sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '100vh' }}>

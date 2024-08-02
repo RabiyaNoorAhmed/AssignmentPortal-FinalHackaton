@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom'; // Import useNavigate
+import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { toast } from 'react-toastify';
 import {
@@ -16,9 +16,10 @@ import {
   MenuItem,
 } from '@mui/material';
 import Logo from '../assets/images/logo.png';
+import Loader from '../components/loader/Loader'; // Import the Loader component
 
 const Register = () => {
-  const navigate = useNavigate(); // Initialize useNavigate
+  const navigate = useNavigate();
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -27,6 +28,8 @@ const Register = () => {
     gender: '',
     role: 'student',
   });
+  const [isLoading, setIsLoading] = useState(false); // State to control the loader
+  const [showLoader, setShowLoader] = useState(false); // State to manage loader visibility
 
   const handleInputChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -40,9 +43,12 @@ const Register = () => {
       return;
     }
 
+    setIsLoading(true); // Show loader when request starts
+    setShowLoader(true); // Show loader with delay
+
     try {
-      const response = await axios.post(`${import.meta.env.VITE_BASE_URL}/users/register`, formData, { withCredentials: true });;
-      toast.success("Registration successful! Please log in."); // Display success message
+      const response = await axios.post(`${import.meta.env.VITE_BASE_URL}/users/register`, formData, { withCredentials: true });
+      toast.success("Registration successful! Please log in.");
       navigate('/'); // Redirect to login page
     } catch (error) {
       if (error.response) {
@@ -50,8 +56,18 @@ const Register = () => {
       } else {
         toast.error("An error occurred. Please try again.");
       }
+    } finally {
+      // Ensure the loader is displayed for at least 3 seconds
+      setTimeout(() => {
+        setIsLoading(false); // Hide loader after request completes
+        setShowLoader(false); // Hide loader
+      }, 3000);
     }
   };
+
+  if (showLoader) {
+    return <Loader />;
+  }
 
   return (
     <Container sx={{ maxWidth: 'xm', mt: 15 }}>
@@ -168,6 +184,7 @@ const Register = () => {
 };
 
 export default Register;
+
 
 
 

@@ -1,18 +1,24 @@
 import React, { useState } from 'react';
 import {
-  Drawer, List, ListItem, ListItemIcon, ListItemText, Divider, IconButton, useMediaQuery, useTheme, Tooltip
+  Drawer, List, ListItem, ListItemIcon, ListItemText, Divider, IconButton, useMediaQuery, useTheme
 } from '@mui/material';
 import {
   Assignment, Assessment, Notifications, Person, Help, ExitToApp, Menu as MenuIcon, ChevronLeft, Dashboard, MoreVert, Close
 } from '@mui/icons-material';
+import UserProfile from '../components/userprofile/UserProfile'; // Import your UserProfile component
 
-export default function Sidebar({ drawerOpen, toggleDrawer, setSelectedSection }) {
+export default function Sidebar({ drawerOpen, toggleDrawer, setSelectedSection, selectedSection }) {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const [miniDrawer, setMiniDrawer] = useState(false);
 
   const handleMiniDrawerToggle = () => {
     setMiniDrawer(!miniDrawer);
+  };
+
+  const handleSectionChange = (section) => {
+    setSelectedSection(section);
+    console.log('Selected section:', section); // Debugging: Log the selected section
   };
 
   const drawerContent = (
@@ -25,19 +31,19 @@ export default function Sidebar({ drawerOpen, toggleDrawer, setSelectedSection }
       )}
       <Divider />
       <List sx={{ mt: 2 }}>
-        <ListItem button onClick={() => setSelectedSection('Dashboard')}>
+        <ListItem button onClick={() => handleSectionChange('Dashboard')}>
           <ListItemIcon>
             <Dashboard />
           </ListItemIcon>
           <ListItemText primary="Dashboard" />
         </ListItem>
-        <ListItem button onClick={() => setSelectedSection('view-assignments')}>
+        <ListItem button onClick={() => handleSectionChange('view-assignments')}>
           <ListItemIcon>
             <Assignment />
           </ListItemIcon>
           <ListItemText primary="View Assignments" />
         </ListItem>
-        <ListItem button onClick={() => setSelectedSection('submit-assignment')}>
+        <ListItem button onClick={() => handleSectionChange('submit-assignment')}>
           <ListItemIcon>
             <Assignment />
           </ListItemIcon>
@@ -55,11 +61,11 @@ export default function Sidebar({ drawerOpen, toggleDrawer, setSelectedSection }
           </ListItemIcon>
           <ListItemText primary="Notifications" />
         </ListItem>
-        <ListItem button>
+        <ListItem button onClick={() => handleSectionChange('User Profile')}>
           <ListItemIcon>
             <Person />
           </ListItemIcon>
-          <ListItemText primary="Profile" />
+          <ListItemText primary="User Profile" />
         </ListItem>
         <ListItem button>
           <ListItemIcon>
@@ -91,7 +97,8 @@ export default function Sidebar({ drawerOpen, toggleDrawer, setSelectedSection }
             boxSizing: 'border-box',
             marginTop: '75px', // Adjusted margin top
             transition: 'width 0.3s',
-            overflowX: 'hidden', // Prevent horizontal scrolling
+            overflowX: 'hidden',
+            background: 'red' // Prevent horizontal scrolling
           },
         }}
       >
@@ -129,6 +136,14 @@ export default function Sidebar({ drawerOpen, toggleDrawer, setSelectedSection }
         >
           {drawerOpen ? <Close /> : <MenuIcon />}
         </IconButton>
+      )}
+
+      {/* Conditional rendering of the UserProfile component */}
+      {selectedSection === 'User Profile' && (
+        <div>
+          <p>Selected Section: {selectedSection}</p> {/* Debugging: Display the selected section */}
+          <UserProfile />
+        </div>
       )}
     </>
   );

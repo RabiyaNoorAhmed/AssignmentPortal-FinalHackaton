@@ -25,6 +25,7 @@ import {
 import DeleteIcon from '@mui/icons-material/Delete';
 import EditIcon from '@mui/icons-material/Edit';
 import AddIcon from '@mui/icons-material/Add';
+import Loader from '../loader/Loader'; // Import the Loader component
 
 const courses = ['Graphics Designing', 'Web and App Development', 'Tecno Kids', 'UI UX Designing', 'Generative Ai & Chatbox', 'Digital Marketing', 'Amazon Mastery'];
 const batches = ['Batch 11', 'Batch 12', 'Batch 13', 'Batch 14', 'Batch 15', 'Batch 16', 'Batch 17'];
@@ -37,6 +38,9 @@ const NotesTable = () => {
   const [openDialog, setOpenDialog] = useState(false);
   const [currentNote, setCurrentNote] = useState(null);
   const [newNote, setNewNote] = useState({ title: '', date: '', content: '', link: '', file: null });
+  const [loading, setLoading] = useState(false); // Loading state
+  const [showLoader, setShowLoader] = useState(false); // State for showing loader
+  const token = localStorage.getItem('authToken');
 
   useEffect(() => {
     if (selectedCourse && selectedBatch) {
@@ -45,11 +49,22 @@ const NotesTable = () => {
   }, [selectedCourse, selectedBatch]);
 
   const fetchNotes = async () => {
+    setLoading(true); // Start loading
+    setShowLoader(true); // Show loader
     try {
-      const response = await axios.get(`http://localhost:5000/api/notes/filter?course=${selectedCourse}&batch=${selectedBatch}`);
+      const response = await axios.get(`${import.meta.env.VITE_BASE_URL}/notes/filter?course=${selectedCourse}&batch=${selectedBatch}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
       setNotes(response.data);
     } catch (error) {
       console.error('Failed to fetch notes:', error);
+
+    }finally {
+      // Ensure the loader is displayed for at least 3 seconds
+      setTimeout(() => {
+        setLoading(false); // Stop loading
+        setShowLoader(false); // Hide loader
+      }, 3000);
     }
   };
 
@@ -63,6 +78,7 @@ const NotesTable = () => {
     setSelectedBatch(event.target.value);
     setNotes([]);
   };
+
   const handleOpenDialog = (note = null) => {
     setCurrentNote(note); // Store the note being edited
     setNewNote(note ? { ...note, file: null } : { title: '', date: '', content: '', link: '', file: null });
@@ -87,16 +103,14 @@ const NotesTable = () => {
         formData.append('file', newNote.file);
       }
 
-      if (currentNote && currentNote._id) {  // Make sure you're using _id if that's the correct property
+      if (currentNote && currentNote._id) {
         const response = await axios.patch(`${import.meta.env.VITE_BASE_URL}/notes/${currentNote._id}`, formData, {
-          headers: { 'Content-Type': 'multipart/form-data'
-            
-           }
+          headers: { 'Content-Type': 'multipart/form-data', Authorization: `Bearer ${token}` }
         });
         console.log('Note updated:', response.data);
       } else {
         const response = await axios.post(`${import.meta.env.VITE_BASE_URL}/notes`, formData, {
-          headers: { 'Content-Type': 'multipart/form-data' }
+          headers: { 'Content-Type': 'multipart/form-data', Authorization: `Bearer ${token}` }
         });
         console.log('Note created:', response.data);
       }
@@ -111,7 +125,9 @@ const NotesTable = () => {
 
   const handleDelete = async (id) => {
     try {
-      const response = await axios.delete(`${import.meta.env.VITE_BASE_URL}/notes/${id}`);
+      const response = await axios.delete(`${import.meta.env.VITE_BASE_URL}/notes/${id}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
       console.log('Note deleted:', response.data);
       fetchNotes(); // Refresh the list after deletion
     } catch (error) {
@@ -119,7 +135,6 @@ const NotesTable = () => {
       alert(`Failed to delete note: ${error.response?.data?.message || error.message}`);
     }
   };
-
 
   const handleFileChange = (event) => {
     const file = event.target.files[0];
@@ -132,6 +147,10 @@ const NotesTable = () => {
       }
     }
   };
+
+  // if (isLoading) {
+  //   return <Loader />;
+  // }
 
   return (
     <Box sx={{ p: 3, display: 'flex', flexDirection: 'column', gap: 3 }}>
@@ -177,6 +196,7 @@ const NotesTable = () => {
             Add
           </Button>
           <br /><br />
+          {showLoader ?( <Loader />):(
           <TableContainer component={Paper} elevation={3} sx={{ borderRadius: '12px' }}>
             <Table>
               <TableHead>
@@ -218,6 +238,7 @@ const NotesTable = () => {
               </TableBody>
             </Table>
           </TableContainer>
+        )}
         </>
       )}
 
@@ -280,3 +301,4 @@ const NotesTable = () => {
 };
 
 export default NotesTable;
+
