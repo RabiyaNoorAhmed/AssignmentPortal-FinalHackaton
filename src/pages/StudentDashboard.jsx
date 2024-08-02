@@ -6,7 +6,7 @@ import Sidebar from './SideBar'; // Import Sidebar component
 import AssignmentPreview from './AssignmentPreview'; // Import the AssignmentPreview component
 import SubmitAssignment from './SubmitAssignment'; // Import the SubmitAssignment component
 import Notes from './Notes';//Import Notes component
-import Course from './Course';
+
 import MarkingStu from './MarkingStu';
 import Header from '../components/header/Header';
 import Loader from '../components/loader/Loader'; // Import Loader component
