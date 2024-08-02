@@ -239,13 +239,13 @@ const Register = () => {
   ];
 
   const batches = {
-    'Graphics Designing': ['Batch A', 'Batch B', 'Batch C'],
-    'Web and App Development': ['Batch X', 'Batch Y'],
-    'Tecno Kids': ['Batch 1', 'Batch 2'],
-    'UI UX Designing': ['Batch P', 'Batch Q'],
-    'Generative AI & Chatbox': ['Batch R', 'Batch S'],
-    'Digital Marketing': ['Batch M', 'Batch N'],
-    'Amazon Mastery': ['Batch Z']
+    'Graphics Designing': [ 'Batch 11', 'Batch 12','Batch 13', 'Batch 14', 'Batch 15', 'Batch 16', 'Batch 17', ],
+    'Web and App Development': ['Batch 11', 'Batch 12','Batch 13', 'Batch 14', 'Batch 15', 'Batch 16', 'Batch 17'],
+    'Tecno Kids': ['Batch 11', 'Batch 12','Batch 13', 'Batch 14', 'Batch 15', 'Batch 16', 'Batch 17',],
+    'UI UX Designing': ['Batch 11', 'Batch 12','Batch 13', 'Batch 14', 'Batch 15', 'Batch 16', 'Batch 17',],
+    'Generative AI & Chatbox': ['Batch 11', 'Batch 12','Batch 13', 'Batch 14', 'Batch 15', 'Batch 16', 'Batch 17',],
+    'Digital Marketing': ['Batch 11', 'Batch 12','Batch 13', 'Batch 14', 'Batch 15', 'Batch 16', 'Batch 17',],
+    'Amazon Mastery': ['Batch 11', 'Batch 12','Batch 13', 'Batch 14', 'Batch 15', 'Batch 16', 'Batch 17',]
   };
 
   const handleInputChange = (e) => {

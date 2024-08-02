@@ -28,17 +28,18 @@ const Login = () => {
 
     try {
       const response = await axios.post(`${import.meta.env.VITE_BASE_URL}/users/login`, formData, { withCredentials: true });
-      const { token, id, name, role, avatar } = response.data;
+      const { token, id, name, role, avatar, course, batch } = response.data;
 
       // Store token and user details in localStorage
       localStorage.setItem('authToken', token);
-      localStorage.setItem('user', JSON.stringify({ name, id, role, avatar, token }));
+      localStorage.setItem('user', JSON.stringify({ name, id, role, avatar, token, course, batch }));
 
       // Update UserContext
-      setCurrentUser({ name, id, role, avatar, token });
+      setCurrentUser({ name, id, role, avatar, token, course, batch });
 
       toast.success("Login successful!");
 
+      // Navigate based on role
       if (role === 'teacher') {
         navigate('/teacher');
       } else if (role === 'student') {
@@ -125,5 +126,3 @@ const Login = () => {
 };
 
 export default Login;
-
-

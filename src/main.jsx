@@ -11,7 +11,7 @@ import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import Logout from './pages/Logout.jsx';
 import './index.css';
-import UserProvider from './context/userContext'
+import UserProvider from './context/userContext.jsx'
 const router = createBrowserRouter([
   {
     path: "/",
