@@ -3,7 +3,7 @@ import {
   Drawer, List, ListItem, ListItemIcon, ListItemText, Divider, IconButton, useMediaQuery, useTheme
 } from '@mui/material';
 import {
-  Assignment, Assessment, Notifications, Person, Help, ExitToApp, Menu as MenuIcon, ChevronLeft, Dashboard, MoreVert, Close
+  Assignment, Book, BookOutlined, Chat, Person, Menu as MenuIcon, ChevronLeft, Dashboard, MoreVert, Close, Grade
 } from '@mui/icons-material';
 import UserProfile from '../components/userprofile/UserProfile'; // Import your UserProfile component
 
@@ -31,53 +31,84 @@ export default function Sidebar({ drawerOpen, toggleDrawer, setSelectedSection, 
       )}
       <Divider />
       <List sx={{ mt: 2 }}>
-        <ListItem button onClick={() => handleSectionChange('Dashboard')}>
-          <ListItemIcon>
+        <ListItem
+          button
+          onClick={() => handleSectionChange('Dashboard')}
+          sx={{ py: miniDrawer ? 0.75 : 1 }} // Adjust vertical padding for balance
+        >
+          <ListItemIcon sx={{ minWidth: miniDrawer ? 0 : 56 }}> {/* Adjust minWidth for miniDrawer */}
             <Dashboard />
           </ListItemIcon>
-          <ListItemText primary="Dashboard" />
+          {!miniDrawer && <ListItemText primary="Dashboard" />}
         </ListItem>
-        <ListItem button onClick={() => handleSectionChange('view-assignments')}>
-          <ListItemIcon>
+        {/* <ListItem
+          button
+          onClick={() => handleSectionChange('Course')}
+          sx={{ py: miniDrawer ? 0.75 : 1 }}
+        >
+          <ListItemIcon sx={{ minWidth: miniDrawer ? 0 : 56 }}>
+            <Book />
+          </ListItemIcon>
+          {!miniDrawer && <ListItemText primary="Course Outline" />}
+        </ListItem> */}
+        <ListItem
+          button
+          onClick={() => handleSectionChange('view-assignments')}
+          sx={{ py: miniDrawer ? 0.75 : 1 }}
+        >
+          <ListItemIcon sx={{ minWidth: miniDrawer ? 0 : 56 }}>
             <Assignment />
           </ListItemIcon>
-          <ListItemText primary="View Assignments" />
+          {!miniDrawer && <ListItemText primary="View Assignments" />}
         </ListItem>
-        <ListItem button onClick={() => handleSectionChange('submit-assignment')}>
-          <ListItemIcon>
+        <ListItem
+          button
+          onClick={() => handleSectionChange('submit-assignment')}
+          sx={{ py: miniDrawer ? 0.75 : 1 }}
+        >
+          <ListItemIcon sx={{ minWidth: miniDrawer ? 0 : 56 }}>
             <Assignment />
           </ListItemIcon>
-          <ListItemText primary="Submit Assignment" />
+          {!miniDrawer && <ListItemText primary="Submit Assignment" />}
         </ListItem>
-        <ListItem button>
-          <ListItemIcon>
-            <Assessment />
+        <ListItem
+          button
+          onClick={() => handleSectionChange('Notes Lectures')}
+          sx={{ py: miniDrawer ? 0.75 : 1 }}
+        >
+          <ListItemIcon sx={{ minWidth: miniDrawer ? 0 : 56 }}>
+            <BookOutlined />
           </ListItemIcon>
-          <ListItemText primary="Notes/Lectures" />
+          {!miniDrawer && <ListItemText primary="Notes Lectures" />}
         </ListItem>
-        <ListItem button>
-          <ListItemIcon>
-            <Notifications />
+        <ListItem
+          button
+          onClick={() => handleSectionChange('MarkingStu')}
+          sx={{ py: miniDrawer ? 0.75 : 1 }}
+        >
+          <ListItemIcon sx={{ minWidth: miniDrawer ? 0 : 56 }}>
+            <Grade />
           </ListItemIcon>
-          <ListItemText primary="Notifications" />
+          {!miniDrawer && <ListItemText primary="Assignment Marks" />}
         </ListItem>
-        <ListItem button onClick={() => handleSectionChange('User Profile')}>
-          <ListItemIcon>
+        <ListItem
+          button
+          onClick={() => handleSectionChange('User Profile')}
+          sx={{ py: miniDrawer ? 0.75 : 1 }}
+        >
+          <ListItemIcon sx={{ minWidth: miniDrawer ? 0 : 56 }}>
             <Person />
           </ListItemIcon>
-          <ListItemText primary="User Profile" />
+          {!miniDrawer && <ListItemText primary="User Profile" />}
         </ListItem>
-        <ListItem button>
-          <ListItemIcon>
-            <Help />
+        <ListItem
+          button
+          sx={{ py: miniDrawer ? 0.75 : 1 }}
+        >
+          <ListItemIcon sx={{ minWidth: miniDrawer ? 0 : 56 }}>
+            <Chat />
           </ListItemIcon>
-          <ListItemText primary="Help/Support" />
-        </ListItem>
-        <ListItem button>
-          <ListItemIcon>
-            <ExitToApp />
-          </ListItemIcon>
-          <ListItemText primary="Logout" />
+          {!miniDrawer && <ListItemText primary="Chat" />}
         </ListItem>
       </List>
     </>

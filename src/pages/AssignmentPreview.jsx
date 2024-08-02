@@ -1,201 +1,179 @@
-import React, { useEffect, useState } from 'react';
+
+import React, { useEffect, useState, useContext } from 'react';
 import axios from 'axios';
 import {
-  Typography, Box, Card, CardContent, Button, Grid, useTheme, useMediaQuery
+  Box,
+  Typography,
+  List,
+  ListItem,
+  ListItemText,
+  Button,
+  CircularProgress,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
 } from '@mui/material';
-import { Download as DownloadIcon } from '@mui/icons-material';
+import { UserContext } from '../context/userContext';
+import { useNavigate } from 'react-router-dom';
 import Loader from '../components/loader/Loader'; // Import Loader component
-import "./StudentDashboard.css";
 
-const AssignmentPreview = ({ course, batch }) => {
+const AssignmentPreview = ({ onNavigateToSubmit }) => {
+  const { currentUser } = useContext(UserContext);
   const [assignments, setAssignments] = useState([]);
-  const [loading, setLoading] = useState(true); // State for loader
-  const theme = useTheme();
-  const isSmallScreen = useMediaQuery(theme.breakpoints.down('sm'));
-  const token = localStorage.getItem('authToken');
+  const [loading, setLoading] = useState(true);
+  const [selectedAssignment, setSelectedAssignment] = useState(null);
+  const [openDialog, setOpenDialog] = useState(false);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchAssignments = async () => {
       try {
-        const response = await axios.get(`${import.meta.env.VITE_BASE_URL}/assignments/filter?course=${course}&batch=${batch}`, {
-          headers: { Authorization: `Bearer ${token}` }
+        const token = localStorage.getItem('authToken');
+        
+        if (!token) {
+          console.error('Token not found');
+          return;
+        }
+
+        const response = await axios.get(`${import.meta.env.VITE_BASE_URL}/assignments/filter`, {
+          params: {
+            course: currentUser.course,
+            batch: currentUser.batch,
+          },
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+          withCredentials: true,
         });
+
         setAssignments(response.data);
       } catch (error) {
-        console.error('Failed to fetch assignments:', error);
+        console.error("Error fetching assignments:", error);
       } finally {
-        setLoading(false); // Hide loader after fetching
+        // Adding a delay before hiding the loader
+        setTimeout(() => {
+          setLoading(false);
+        }, 500); // Delay in milliseconds
       }
     };
 
-    if (course && batch) {
-      // Simulate a delay for loader
-      setTimeout(() => {
-        fetchAssignments();
-      }, 500); // Simulate delay of 500ms
-    }
-  }, [course, batch, token]);
+    fetchAssignments();
+  }, [currentUser.course, currentUser.batch]);
 
-  // Handle file download
-  const handleDownload = (fileUrl, fileName) => {
-    const a = document.createElement('a');
-    a.href = fileUrl;
-    a.download = fileName;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
+  const handleOpenDialog = (assignment) => {
+    setSelectedAssignment(assignment);
+    setOpenDialog(true);
+  };
+
+  const handleCloseDialog = () => {
+    setOpenDialog(false);
+    setSelectedAssignment(null);
+  };
+
+  const handleSubmitAssignment = () => {
+    if (selectedAssignment) {
+      onNavigateToSubmit(selectedAssignment);
+      handleCloseDialog();
+    }
   };
 
   return (
-    <Box sx={{ p: 3, display: 'flex', flexDirection: 'column', gap: 3 }}>
-      <Typography variant="h4" gutterBottom>
-        Assignment Previews
-      </Typography>
-
+    <Box sx={{ p: 4 }}>
       {loading ? (
-        <Loader /> // Show loader while fetching data
+        <Loader /> // Display loader while loading
       ) : (
-        assignments.length === 0 ? (
-          <Typography variant="h6" color="text.secondary">
-            No assignments available for this course or batch.
+        <>
+          <Typography variant="h4" gutterBottom>
+            Assignments for {currentUser.course} - {currentUser.batch}
           </Typography>
-        ) : (
-          assignments.map((assignment, index) => (
-            <Card key={assignment._id} sx={{ maxWidth: '100%', margin: 'auto', mt: 3, boxShadow: 3, borderRadius: 2 }}>
-              <CardContent>
-                <Typography variant="h6" component="div" gutterBottom sx={{ mb: 1 }}>
-                  {assignment.title} {/* Displaying assignment title */}
-                </Typography>
-                <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-                  {assignment.description} {/* Displaying assignment description */}
-                </Typography>
+          <List>
+            {assignments.map((assignment) => (
+              <ListItem key={assignment._id} sx={{ mb: 2, borderRadius: '5px' }} className='boxshadow'>
+                <ListItemText
+                  primary={assignment.title}
+                  secondary={assignment.description}
+                />
+                <Button
+                  variant="contained"
+                  color="primary"
+                  onClick={() => handleOpenDialog(assignment)}
+                  sx={{ mr: 2 }}
+                >
+                  View
+                </Button>
+                <Button
+                  variant="outlined"
+                  color="primary"
+                  onClick={() => onNavigateToSubmit(assignment)}
+                >
+                  Submit Assignment
+                </Button>
+              </ListItem>
+            ))}
+          </List>
 
-                <Grid container spacing={1} alignItems="center">
-                  <Grid item xs={12} sm={4}>
-                    <Button
-                      variant="outlined"
-                      sx={{
-                        width: '100%',
-                        height: '50px',
-                        textAlign: 'center',
-                        fontSize: '0.7rem',
-                        padding: '16px',
-                        boxSizing: 'border-box',
-                      }}
-                    >
-                      Assignment #{index + 1}
-                    </Button>
-                  </Grid>
-
-                  <Grid item xs={12} sm={4}>
-                    {assignment.link && (
-                      <Button
-                        variant="outlined"
-                        color="secondary"
-                        href={assignment.link} // Link to view the assignment
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        sx={{
-                          width: '100%',
-                          height: '50px',
-                          textAlign: 'center',
-                          fontSize: '0.9rem',
-                          padding: '10px',
-                          boxSizing: 'border-box',
-                        }}
-                      >
-                        View Assignment Link
-                      </Button>
-                    )}
-                  </Grid>
-
-                  <Grid item xs={12} sm={4}>
-                    {assignment.file && (
-                      <Button
-                        variant="outlined"
-                        color="secondary"
-                        href={assignment.file} // Link to view the file
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        sx={{
-                          width: '100%',
-                          height: '50px',
-                          textAlign: 'center',
-                          fontSize: '0.9rem',
-                          padding: '10px',
-                          boxSizing: 'border-box',
-                        }}
-                      >
+          {/* Dialog for Assignment Details */}
+          <Dialog open={openDialog} onClose={handleCloseDialog} maxWidth="md" fullWidth>
+            <DialogTitle>Assignment Details</DialogTitle>
+            <DialogContent>
+              {selectedAssignment && (
+                <Box>
+                  <Typography variant="h6" gutterBottom>
+                    {selectedAssignment.title}
+                  </Typography>
+                  <Typography variant="body1" gutterBottom>
+                    Due Date: {new Date(selectedAssignment.dueDate).toLocaleDateString()}
+                  </Typography>
+                  <Typography variant="body1" gutterBottom>
+                    Total Marks: {selectedAssignment.totalMarks}
+                  </Typography>
+                  <Typography variant="body1" gutterBottom>
+                    Description:
+                  </Typography>
+                  <Typography variant="body1" paragraph>
+                    {selectedAssignment.description}
+                  </Typography>
+                  <Typography variant="body1" gutterBottom>
+                    File:
+                  </Typography>
+                  <Typography variant="body1">
+                    {selectedAssignment.file ? (
+                      <a href={selectedAssignment.file} target="_blank" rel="noopener noreferrer">
                         View File
-                      </Button>
+                      </a>
+                    ) : (
+                      'No file available'
                     )}
-                  </Grid>
-
-                  <Grid item xs={12} sm={3}>
-                    <Button
-                      variant="contained"
-                      color="secondary"
-                      sx={{
-                        width: '100%',
-                        height: '50px',
-                        textAlign: 'center',
-                        fontSize: '0.8rem',
-                        backgroundColor: 'gray',
-                        padding: '16px',
-                        boxSizing: 'border-box',
-                      }}
-                    >
-                      Marks: {assignment.totalMarks}
-                    </Button>
-                  </Grid>
-
-                  <Grid item xs={12} sm={4}>
-                    <Button
-                      variant="contained"
-                      color="error"
-                      sx={{
-                        width: '100%',
-                        height: '50px',
-                        textAlign: 'center',
-                        fontSize: '0.8rem',
-                        backgroundColor: 'error.main',
-                        padding: '8px',
-                        boxSizing: 'border-box',
-                      }}
-                    >
-                      Deadline:<br /> {assignment.dueDate}
-                    </Button>
-                  </Grid>
-
-                  <Grid item xs={12} sm={5}>
-                    <Box sx={{ display: 'flex', flexDirection: isSmallScreen ? 'column' : 'row', alignItems: 'center', justifyContent: 'center', height: '100%' ,width:'100%'}}>
-                      {assignment.file && (
-                        <Button
-                          variant="outlined"
-                          color="secondary"
-                          startIcon={<DownloadIcon />}
-                          onClick={() => handleDownload(assignment.file, assignment.title)}
-                          sx={{
-                            width:'100%',
-                            height: '50px',
-                            padding: '8px',
-                            boxSizing: 'border-box',
-                          }}
-                        >
-                          Download
-                        </Button>
-                      )}
-                    </Box>
-                  </Grid>
-                </Grid>
-              </CardContent>
-            </Card>
-          ))
-        )
+                  </Typography>
+                  <Typography variant="body1" gutterBottom>
+                    Assignment Link:
+                  </Typography>
+                  <Typography variant="body1">
+                    {selectedAssignment.link ? (
+                      <a href={selectedAssignment.link} target="_blank" rel="noopener noreferrer">
+                        Open Assignment
+                      </a>
+                    ) : (
+                      'No link available'
+                    )}
+                  </Typography>
+                </Box>
+              )}
+            </DialogContent>
+            <DialogActions>
+              <Button onClick={handleCloseDialog} color="primary">
+                Close
+              </Button>
+              <Button onClick={handleSubmitAssignment} color="primary">
+                Submit Assignment
+              </Button>
+            </DialogActions>
+          </Dialog>
+        </>
       )}
     </Box>
   );
 };
 
 export default AssignmentPreview;
-
