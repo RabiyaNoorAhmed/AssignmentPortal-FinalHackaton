@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState, useContext } from 'react';
 import axios from 'axios';
 import {
@@ -8,15 +7,14 @@ import {
   ListItem,
   ListItemText,
   Button,
-  CircularProgress,
   Dialog,
   DialogActions,
   DialogContent,
   DialogTitle,
 } from '@mui/material';
 import { UserContext } from '../context/userContext';
-import { useNavigate } from 'react-router-dom';
-import Loader from '../components/loader/Loader'; // Import Loader component
+import Loader from '../components/loader/Loader';
+import SubmitAssignment from './SubmitAssignment';
 
 const AssignmentPreview = ({ onNavigateToSubmit }) => {
   const { currentUser } = useContext(UserContext);
@@ -24,42 +22,42 @@ const AssignmentPreview = ({ onNavigateToSubmit }) => {
   const [loading, setLoading] = useState(true);
   const [selectedAssignment, setSelectedAssignment] = useState(null);
   const [openDialog, setOpenDialog] = useState(false);
-  const navigate = useNavigate();
 
   useEffect(() => {
-    const fetchAssignments = async () => {
-      try {
-        const token = localStorage.getItem('authToken');
-        
-        if (!token) {
-          console.error('Token not found');
-          return;
-        }
-
-        const response = await axios.get(`${import.meta.env.VITE_BASE_URL}/assignments/filter`, {
-          params: {
-            course: currentUser.course,
-            batch: currentUser.batch,
-          },
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-          withCredentials: true,
-        });
-
-        setAssignments(response.data);
-      } catch (error) {
-        console.error("Error fetching assignments:", error);
-      } finally {
-        // Adding a delay before hiding the loader
-        setTimeout(() => {
-          setLoading(false);
-        }, 500); // Delay in milliseconds
-      }
-    };
-
     fetchAssignments();
   }, [currentUser.course, currentUser.batch]);
+
+  useEffect(() => {
+    console.log('Assignments state updated:', assignments); // Debug log
+  }, [assignments]);
+
+  const fetchAssignments = async () => {
+    try {
+      const token = localStorage.getItem('authToken');
+      if (!token) {
+        console.error('Token not found');
+        return;
+      }
+  
+      const response = await axios.get(`${import.meta.env.VITE_BASE_URL}/assignments/filter`, {
+        params: {
+          course: currentUser.course,
+          batch: currentUser.batch,
+        },
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+        withCredentials: true,
+      });
+  
+      setAssignments(response.data);
+    } catch (error) {
+      console.error('Error fetching assignments:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+  
 
   const handleOpenDialog = (assignment) => {
     setSelectedAssignment(assignment);
@@ -71,46 +69,92 @@ const AssignmentPreview = ({ onNavigateToSubmit }) => {
     setSelectedAssignment(null);
   };
 
-  const handleSubmitAssignment = () => {
+  const handleSubmitAssignment = async () => {
     if (selectedAssignment) {
-      onNavigateToSubmit(selectedAssignment);
+      try {
+        await onNavigateToSubmit(selectedAssignment); // Await the promise
+        fetchAssignments(); // Refetch assignments after successful submission
+      } catch (error) {
+        console.error('Submission error:', error);
+      }
       handleCloseDialog();
+    }
+  };
+
+  const handleSubmissionSuccess = (assignmentId) => {
+    setAssignments((prevAssignments) =>
+      prevAssignments.map((assignment) =>
+        assignment._id === assignmentId ? { ...assignment, submitted: true } : assignment
+      )
+    );
+  };
+
+  const getAssignmentStatus = (assignment) => {
+    console.log('Assignment:', assignment); // Debug log
+    const currentDate = new Date();
+    const dueDate = new Date(assignment.dueDate);
+  
+    if (assignment.submitted) { // Check if assignment is submitted
+      console.log('Status: Submitted'); // Debug log
+      return 'Submitted';
+    } else if (currentDate > dueDate) {
+      console.log('Status: Due Date Passed'); // Debug log
+      return 'Due Date Passed';
+    } else {
+      console.log('Status: Pending'); // Debug log
+      return 'Pending';
+    }
+  };
+  
+
+  const getStatusButtonProps = (status) => {
+    switch (status) {
+      case 'Submitted':
+        return { color: 'green', text: 'Submitted' };
+      case 'Due Date Passed':
+        return { color: 'red', text: 'Due Date Passed' };
+      default:
+        return { color: '#f0e57f', text: 'Pending' }; // Light yellow
     }
   };
 
   return (
     <Box sx={{ p: 4 }}>
       {loading ? (
-        <Loader /> // Display loader while loading
+        <Loader />
       ) : (
         <>
           <Typography variant="h4" gutterBottom>
             Assignments for {currentUser.course} - {currentUser.batch}
           </Typography>
           <List>
-            {assignments.map((assignment) => (
-              <ListItem key={assignment._id} sx={{ mb: 2, borderRadius: '5px' }} className='boxshadow'>
-                <ListItemText
-                  primary={assignment.title}
-                  secondary={assignment.description}
-                />
-                <Button
-                  variant="contained"
-                  color="primary"
-                  onClick={() => handleOpenDialog(assignment)}
-                  sx={{ mr: 2 }}
-                >
-                  View
-                </Button>
-                <Button
-                  variant="outlined"
-                  color="primary"
-                  onClick={() => onNavigateToSubmit(assignment)}
-                >
-                  Submit Assignment
-                </Button>
-              </ListItem>
-            ))}
+            {assignments.map((assignment) => {
+              const status = getAssignmentStatus(assignment);
+              const { color, text } = getStatusButtonProps(status);
+
+              return (
+                <ListItem key={assignment._id} sx={{ mb: 2, borderRadius: '5px' }} className="boxshadow">
+                  <ListItemText
+                    primary={assignment.title}
+                    secondary={assignment.description}
+                  />
+                  <Button
+                    variant="contained"
+                    style={{ marginRight: '16px', backgroundColor: color, color: 'black' }}
+                    disabled
+                  >
+                    {text}
+                  </Button>
+                  <Button
+                    variant="contained"
+                    color="primary"
+                    onClick={() => handleOpenDialog(assignment)}
+                  >
+                    View
+                  </Button>
+                </ListItem>
+              );
+            })}
           </List>
 
           {/* Dialog for Assignment Details */}
@@ -128,16 +172,11 @@ const AssignmentPreview = ({ onNavigateToSubmit }) => {
                   <Typography variant="body1" gutterBottom>
                     Total Marks: {selectedAssignment.totalMarks}
                   </Typography>
-                  <Typography variant="body1" gutterBottom>
-                    Description:
-                  </Typography>
                   <Typography variant="body1" paragraph>
-                    {selectedAssignment.description}
-                  </Typography>
-                  <Typography variant="body1" gutterBottom>
-                    File:
+                    Description: {selectedAssignment.description}
                   </Typography>
                   <Typography variant="body1">
+                    File:{' '}
                     {selectedAssignment.file ? (
                       <a href={selectedAssignment.file} target="_blank" rel="noopener noreferrer">
                         View File
@@ -146,10 +185,8 @@ const AssignmentPreview = ({ onNavigateToSubmit }) => {
                       'No file available'
                     )}
                   </Typography>
-                  <Typography variant="body1" gutterBottom>
-                    Assignment Link:
-                  </Typography>
                   <Typography variant="body1">
+                    Assignment Link:{' '}
                     {selectedAssignment.link ? (
                       <a href={selectedAssignment.link} target="_blank" rel="noopener noreferrer">
                         Open Assignment
@@ -162,14 +199,24 @@ const AssignmentPreview = ({ onNavigateToSubmit }) => {
               )}
             </DialogContent>
             <DialogActions>
-              <Button onClick={handleCloseDialog} color="primary">
-                Close
-              </Button>
-              <Button onClick={handleSubmitAssignment} color="primary">
+              <Button onClick={handleCloseDialog}>Close</Button>
+              <Button
+                onClick={handleSubmitAssignment}
+                color="primary"
+                disabled={selectedAssignment && new Date(selectedAssignment.dueDate) < new Date()}
+              >
                 Submit Assignment
               </Button>
             </DialogActions>
           </Dialog>
+
+          {/* Render SubmitAssignment component when needed */}
+          {selectedAssignment && (
+            <SubmitAssignment
+              assignmentId={selectedAssignment._id}
+              onSubmissionSuccess={handleSubmissionSuccess}
+            />
+          )}
         </>
       )}
     </Box>
