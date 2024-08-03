@@ -57,7 +57,7 @@ const SubmitAssignment = ({ assignmentId, onSubmissionSuccess }) => {
         }
 
         const response = await axios.post(
-          'http://localhost:5000/api/assignments/submit',
+          `${import.meta.env.VITE_BASE_URL}/assignments/submit`,
           formData,
           {
             headers: {
