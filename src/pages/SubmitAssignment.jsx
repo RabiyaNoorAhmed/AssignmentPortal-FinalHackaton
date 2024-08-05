@@ -3,6 +3,8 @@ import axios from 'axios';
 import { TextField, Button, Typography, Box, IconButton } from '@mui/material';
 import { FileUpload as FileUploadIcon, Link as LinkIcon, Image as ImageIcon } from '@mui/icons-material';
 import { UserContext } from '../context/userContext';
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 const SubmitAssignment = ({ assignmentId, onSubmissionSuccess }) => {
   const { currentUser } = useContext(UserContext);
@@ -13,8 +15,8 @@ const SubmitAssignment = ({ assignmentId, onSubmissionSuccess }) => {
   const [file, setFile] = useState(null);
   const [link, setLink] = useState('');
   const [submissionType, setSubmissionType] = useState('file');
-  const [status, setStatus] = useState('');
   const [isSubmitted, setIsSubmitted] = useState(false);
+  const [submissionId, setSubmissionId] = useState(null);
 
   const handleFileChange = (e) => {
     setFile(e.target.files[0]);
@@ -25,7 +27,7 @@ const SubmitAssignment = ({ assignmentId, onSubmissionSuccess }) => {
     const token = localStorage.getItem('authToken');
 
     if (!token) {
-      console.error('Token not found');
+      toast.error('Token not found');
       return;
     }
 
@@ -68,30 +70,61 @@ const SubmitAssignment = ({ assignmentId, onSubmissionSuccess }) => {
         );
 
         if (response.status === 201) {
-          setStatus('Assignment submitted successfully!');
+          const submittedId = response.data.submissionId; // Get submissionId from response
+          setSubmissionId(submittedId); // Store submissionId
+          toast.success('Assignment submitted successfully!');
           setIsSubmitted(true);
-          // Notify the parent component about the successful submission
           onSubmissionSuccess(assignmentId);
         }
       } catch (error) {
-        setStatus('Failed to submit assignment. Please try again.');
+        toast.error('Failed to submit assignment. Please try again.');
         console.error('Error submitting assignment:', error.response?.data || error.message);
       }
     } else {
-      setStatus('Please fill all the fields and provide the required submission type.');
+      toast.warn('Please fill all the fields and provide the required submission type.');
     }
   };
 
-  const handleUnsubmit = () => {
-    setStudentName('');
-    setRollNumber('');
-    setTitle('');
-    setDescription('');
-    setFile(null);
-    setLink('');
-    setSubmissionType('file');
-    setStatus('Assignment has been unsubmitted.');
-    setIsSubmitted(false);
+  const handleUnsubmit = async () => {
+    const token = localStorage.getItem('authToken');
+
+    if (!token) {
+      toast.error('Token not found');
+      return;
+    }
+
+    if (!submissionId) {
+      toast.error('No submission to unsubmit');
+      return;
+    }
+
+    try {
+      const response = await axios.delete(
+        `${import.meta.env.VITE_BASE_URL}/assignments/unsubmit/${submissionId}`, // Pass the submissionId in the URL
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      if (response.status === 200) {
+        toast.info('Assignment has been unsubmitted.');
+        setIsSubmitted(false);
+        setSubmissionId(null); // Clear the stored submissionId
+        // Clear the form fields if needed
+        setStudentName('');
+        setRollNumber('');
+        setTitle('');
+        setDescription('');
+        setFile(null);
+        setLink('');
+        setSubmissionType('file');
+      }
+    } catch (error) {
+      toast.error('Failed to unsubmit assignment. Please try again.');
+      console.error('Error unsubmitting assignment:', error.response?.data || error.message);
+    }
   };
 
   const handleSubmissionTypeChange = (type) => {
@@ -100,6 +133,7 @@ const SubmitAssignment = ({ assignmentId, onSubmissionSuccess }) => {
 
   return (
     <div className="boxshadow">
+      <ToastContainer position="top-center" autoClose={5000} />
       <Box component="form" onSubmit={handleSubmit} sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
         <Typography variant="h4" gutterBottom>
           {isSubmitted ? 'Assignment Submitted' : 'Submit Assignment'}
@@ -191,11 +225,6 @@ const SubmitAssignment = ({ assignmentId, onSubmissionSuccess }) => {
           <Button variant="contained" color="secondary" onClick={handleUnsubmit}>
             Unsubmit Assignment
           </Button>
-        )}
-        {status && (
-          <Typography variant="body1" color="success">
-            {status}
-          </Typography>
         )}
       </Box>
     </div>
