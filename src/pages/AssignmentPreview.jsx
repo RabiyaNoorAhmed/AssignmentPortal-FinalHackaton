@@ -27,10 +27,6 @@ const AssignmentPreview = ({ onNavigateToSubmit }) => {
     fetchAssignments();
   }, [currentUser.course, currentUser.batch]);
 
-  useEffect(() => {
-    console.log('Assignments state updated:', assignments); // Debug log
-  }, [assignments]);
-
   const fetchAssignments = async () => {
     try {
       const token = localStorage.getItem('authToken');
@@ -38,7 +34,7 @@ const AssignmentPreview = ({ onNavigateToSubmit }) => {
         console.error('Token not found');
         return;
       }
-  
+
       const response = await axios.get(`${import.meta.env.VITE_BASE_URL}/assignments/filter`, {
         params: {
           course: currentUser.course,
@@ -49,7 +45,7 @@ const AssignmentPreview = ({ onNavigateToSubmit }) => {
         },
         withCredentials: true,
       });
-  
+
       setAssignments(response.data);
     } catch (error) {
       console.error('Error fetching assignments:', error);
@@ -57,7 +53,6 @@ const AssignmentPreview = ({ onNavigateToSubmit }) => {
       setLoading(false);
     }
   };
-  
 
   const handleOpenDialog = (assignment) => {
     setSelectedAssignment(assignment);
@@ -90,22 +85,17 @@ const AssignmentPreview = ({ onNavigateToSubmit }) => {
   };
 
   const getAssignmentStatus = (assignment) => {
-    console.log('Assignment:', assignment); // Debug log
     const currentDate = new Date();
     const dueDate = new Date(assignment.dueDate);
-  
+
     if (assignment.submitted) { // Check if assignment is submitted
-      console.log('Status: Submitted'); // Debug log
       return 'Submitted';
     } else if (currentDate > dueDate) {
-      console.log('Status: Due Date Passed'); // Debug log
       return 'Due Date Passed';
     } else {
-      console.log('Status: Pending'); // Debug log
       return 'Pending';
     }
   };
-  
 
   const getStatusButtonProps = (status) => {
     switch (status) {

@@ -1,4 +1,4 @@
-import React, { useState, useContext } from 'react';
+import React, { useState, useContext, useEffect } from 'react';
 import axios from 'axios';
 import { TextField, Button, Typography, Box, IconButton } from '@mui/material';
 import { FileUpload as FileUploadIcon, Link as LinkIcon, Image as ImageIcon } from '@mui/icons-material';
@@ -17,6 +17,43 @@ const SubmitAssignment = ({ assignmentId, onSubmissionSuccess }) => {
   const [submissionType, setSubmissionType] = useState('file');
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [submissionId, setSubmissionId] = useState(null);
+
+  useEffect(() => {
+    // Fetch the initial submission status when component mounts
+    const fetchSubmissionStatus = async () => {
+      const token = localStorage.getItem('authToken');
+
+      if (!token) {
+        toast.error('Token not found');
+        return;
+      }
+
+      try {
+        const response = await axios.get(
+          `${import.meta.env.VITE_BASE_URL}/assignments/submission-status`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+            params: {
+              assignmentId,
+              studentId: currentUser.id,
+            },
+          }
+        );
+
+        const { submitted, submissionId } = response.data;
+        console.log('Fetched submission status:', { submitted, submissionId }); // Debugging log
+        setIsSubmitted(submitted);
+        setSubmissionId(submissionId); // Save the submissionId if it exists
+      } catch (error) {
+        toast.error('Failed to fetch submission status.');
+        console.error('Error fetching submission status:', error.response?.data || error.message);
+      }
+    };
+
+    fetchSubmissionStatus();
+  }, [assignmentId, currentUser.id]);
 
   const handleFileChange = (e) => {
     setFile(e.target.files[0]);
@@ -71,6 +108,7 @@ const SubmitAssignment = ({ assignmentId, onSubmissionSuccess }) => {
 
         if (response.status === 201) {
           const submittedId = response.data.submissionId; // Get submissionId from response
+          console.log('Assignment submitted with ID:', submittedId); // Debugging log
           setSubmissionId(submittedId); // Store submissionId
           toast.success('Assignment submitted successfully!');
           setIsSubmitted(true);
@@ -84,21 +122,22 @@ const SubmitAssignment = ({ assignmentId, onSubmissionSuccess }) => {
       toast.warn('Please fill all the fields and provide the required submission type.');
     }
   };
-
   const handleUnsubmit = async () => {
     const token = localStorage.getItem('authToken');
-
+  
     if (!token) {
       toast.error('Token not found');
       return;
     }
-
+  
     if (!submissionId) {
       toast.error('No submission to unsubmit');
       return;
     }
-
+  
     try {
+      console.log('Attempting to unsubmit assignment with ID:', submissionId);
+  
       const response = await axios.delete(
         `${import.meta.env.VITE_BASE_URL}/assignments/unsubmit/${submissionId}`, // Pass the submissionId in the URL
         {
@@ -107,12 +146,14 @@ const SubmitAssignment = ({ assignmentId, onSubmissionSuccess }) => {
           },
         }
       );
-
+  
+      console.log('Unsubmit response:', response); // Debugging log
+  
       if (response.status === 200) {
         toast.info('Assignment has been unsubmitted.');
         setIsSubmitted(false);
         setSubmissionId(null); // Clear the stored submissionId
-        // Clear the form fields if needed
+        // Optionally clear the form fields
         setStudentName('');
         setRollNumber('');
         setTitle('');
@@ -120,12 +161,16 @@ const SubmitAssignment = ({ assignmentId, onSubmissionSuccess }) => {
         setFile(null);
         setLink('');
         setSubmissionType('file');
+      } else {
+        toast.error(`Unexpected response status: ${response.status}`);
       }
     } catch (error) {
       toast.error('Failed to unsubmit assignment. Please try again.');
       console.error('Error unsubmitting assignment:', error.response?.data || error.message);
     }
   };
+  
+  
 
   const handleSubmissionTypeChange = (type) => {
     setSubmissionType(type);
