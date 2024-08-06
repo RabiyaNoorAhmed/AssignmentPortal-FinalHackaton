@@ -36,44 +36,14 @@ const initialStudents = [
     id: 1,
     rollNo: 'A01',
     name: 'Alice',
-    course: 'Math',
-    batch: 'Batch A',
+    course: 'Graphics Designing',
+    batch: 'Batch 11',
     assignments: [
       { id: 1, marks: 40, link: 'http://example.com/alice-math-homework', code: 'XYZ123', uploadedAt: '2024-07-24T10:00:00Z' },
       { id: 2, marks: 90, link: 'http://example.com/alice-history-essay', code: 'ABC456', uploadedAt: '2024-07-25T11:00:00Z' },
     ],
   },
-  {
-    id: 2,
-    rollNo: 'A02',
-    name: 'Bob',
-    course: 'Math',
-    batch: 'Batch A',
-    assignments: [
-      { id: 1, marks: 35, link: 'http://example.com/bob-math-homework', code: 'LMN789', uploadedAt: '2024-07-24T12:00:00Z' },
-      { id: 2, marks: 85, link: 'http://example.com/bob-history-essay', code: 'DEF012', uploadedAt: '2024-07-25T14:00:00Z' },
-    ],
-  },
-  {
-    id: 3,
-    rollNo: 'B01',
-    name: 'Charlie',
-    course: 'History',
-    batch: 'Batch B',
-    assignments: [
-      { id: 2, marks: 80, link: 'http://example.com/charlie-history-essay', code: 'GHI345', uploadedAt: '2024-07-25T15:00:00Z' },
-    ],
-  },
-  {
-    id: 4,
-    rollNo: 'C01',
-    name: 'David',
-    course: 'Science',
-    batch: 'Batch C',
-    assignments: [
-      { id: 3, marks: 70, link: 'http://example.com/david-science-project', code: 'JKL678', uploadedAt: '2024-07-26T09:00:00Z' },
-    ],
-  },
+  // Add more student data as needed
 ];
 
 const StyledTableCell = styled(TableCell)({
@@ -115,16 +85,18 @@ const Marking = () => {
   };
 
   const handleMarkChange = (studentId, assignmentId, marks) => {
-    setStudents(students.map(student => 
+    const marksValue = Number(marks);
+    if (isNaN(marksValue)) return; // Avoid setting invalid marks
+    setStudents(students.map(student =>
       student.id === studentId
         ? {
-            ...student,
-            assignments: student.assignments.map(assignment =>
-              assignment.id === assignmentId
-                ? { ...assignment, marks: Number(marks) }
-                : assignment
-            ),
-          }
+          ...student,
+          assignments: student.assignments.map(assignment =>
+            assignment.id === assignmentId
+              ? { ...assignment, marks: marksValue }
+              : assignment
+          ),
+        }
         : student
     ));
   };
@@ -137,40 +109,38 @@ const Marking = () => {
     ));
   };
 
-  const filteredStudents = initialStudents.filter(student =>
+  const filteredStudents = students.filter(student =>
     student.course === selectedCourse && student.batch === selectedBatch
+  );
+
+  const filteredAssignments = assignments.filter(assignment =>
+    filteredStudents.some(student =>
+      student.assignments.some(a => a.id === assignment.id)
+    )
   );
 
   const getAssignmentStats = (assignmentId) => {
     const studentsWithAssignment = filteredStudents.filter(student =>
       student.assignments.some(assignment => assignment.id === assignmentId)
     );
+
     const totalStudents = filteredStudents.length;
     const submittedAssignments = studentsWithAssignment.length;
     const assignmentMarks = studentsWithAssignment.flatMap(student =>
       student.assignments.filter(assignment => assignment.id === assignmentId).map(assignment => assignment.marks)
     );
 
-    if (assignmentMarks.length === 0) {
-      return {
-        submittedAssignments,
-        totalStudents,
-        averageMarks: 0,
-        topStudent: 'N/A',
-        bottomStudent: 'N/A',
-        missingAssignments: totalStudents,
-      };
-    }
+    const averageMarks = assignmentMarks.length === 0
+      ? 0
+      : assignmentMarks.reduce((sum, marks) => sum + marks, 0) / assignmentMarks.length;
 
-    const averageMarks = assignmentMarks.reduce((sum, marks) => sum + marks, 0) / assignmentMarks.length;
-    const topStudent = studentsWithAssignment.sort((a, b) =>
-      b.assignments.find(assignment => assignment.id === assignmentId).marks -
-      a.assignments.find(assignment => assignment.id === assignmentId).marks
-    )[0]?.name || 'N/A';
-    const bottomStudent = studentsWithAssignment.sort((a, b) =>
-      a.assignments.find(assignment => assignment.id === assignmentId).marks -
-      b.assignments.find(assignment => assignment.id === assignmentId).marks
-    )[0]?.name || 'N/A';
+    const sortedByMarks = studentsWithAssignment.sort((a, b) =>
+      b.assignments.find(assignment => assignment.id === assignmentId)?.marks -
+      a.assignments.find(assignment => assignment.id === assignmentId)?.marks
+    );
+
+    const topStudent = sortedByMarks[0]?.name || 'N/A';
+    const bottomStudent = sortedByMarks.slice(-1)[0]?.name || 'N/A';
     const missingAssignments = totalStudents - submittedAssignments;
 
     return {
@@ -181,7 +151,7 @@ const Marking = () => {
       bottomStudent,
       missingAssignments,
       assignmentMarks,
-      studentsWithAssignment,
+      studentsWithAssignment: studentsWithAssignment || [],
     };
   };
 
@@ -190,9 +160,12 @@ const Marking = () => {
 
     const stats = getAssignmentStats(selectedAssignment);
 
+    if (!stats.studentsWithAssignment || !Array.isArray(stats.studentsWithAssignment)) {
+      return null;
+    }
+
     return (
       <Box sx={{ mb: 3 }}>
-      
         <Typography variant="h6" gutterBottom>Assignment Statistics Chart</Typography>
         <BarChart
           width={600}
@@ -216,7 +189,7 @@ const Marking = () => {
 
   return (
     <Box sx={{ p: 3, display: 'flex', flexDirection: 'column', gap: 2 }}>
-    <Typography variant="h4" gutterBottom>
+      <Typography variant="h4" gutterBottom>
         Assignment Marking
       </Typography>
       <Box sx={{ display: 'flex', gap: 2, mb: 2 }}>
@@ -251,7 +224,7 @@ const Marking = () => {
             onChange={handleAssignmentChange}
             label="Assignment"
           >
-            {assignments.map(assignment => (
+            {filteredAssignments.map(assignment => (
               <MenuItem key={assignment.id} value={assignment.id}>
                 {assignment.title}
                 <IconButton onClick={() => handleLockToggle(assignment.id)} sx={{ ml: 2 }}>

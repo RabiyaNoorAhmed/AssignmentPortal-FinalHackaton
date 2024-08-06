@@ -16,10 +16,6 @@ import {
   DialogTitle,
   IconButton,
   Typography,
-  FormControl,
-  InputLabel,
-  Select,
-  MenuItem,
   Box,
 } from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
@@ -27,13 +23,9 @@ import EditIcon from '@mui/icons-material/Edit';
 import AddIcon from '@mui/icons-material/Add';
 import Loader from '../loader/Loader'; // Import the Loader component
 
-const courses = ['Graphics Designing', 'Web and App Development', 'Tecno Kids', 'UI UX Designing', 'Generative Ai & Chatbox', 'Digital Marketing', 'Amazon Mastery'];
-const batches = ['Batch 11', 'Batch 12', 'Batch 13', 'Batch 14', 'Batch 15', 'Batch 16', 'Batch 17'];
 const acceptedFileTypes = ['application/pdf', 'image/jpeg', 'image/png', 'image/gif'];
 
 const NotesTable = () => {
-  const [selectedCourse, setSelectedCourse] = useState('');
-  const [selectedBatch, setSelectedBatch] = useState('');
   const [notes, setNotes] = useState([]);
   const [openDialog, setOpenDialog] = useState(false);
   const [currentNote, setCurrentNote] = useState(null);
@@ -41,6 +33,10 @@ const NotesTable = () => {
   const [loading, setLoading] = useState(false); // Loading state
   const [showLoader, setShowLoader] = useState(false); // State for showing loader
   const token = localStorage.getItem('authToken');
+
+  // Retrieve selected course and batch from localStorage
+  const selectedCourse = localStorage.getItem('selectedCourse');
+  const selectedBatch = localStorage.getItem('selectedBatch');
 
   useEffect(() => {
     if (selectedCourse && selectedBatch) {
@@ -58,25 +54,13 @@ const NotesTable = () => {
       setNotes(response.data);
     } catch (error) {
       console.error('Failed to fetch notes:', error);
-
-    }finally {
+    } finally {
       // Ensure the loader is displayed for at least 3 seconds
       setTimeout(() => {
         setLoading(false); // Stop loading
         setShowLoader(false); // Hide loader
       }, 3000);
     }
-  };
-
-  const handleCourseChange = (event) => {
-    setSelectedCourse(event.target.value);
-    setSelectedBatch('');
-    setNotes([]);
-  };
-
-  const handleBatchChange = (event) => {
-    setSelectedBatch(event.target.value);
-    setNotes([]);
   };
 
   const handleOpenDialog = (note = null) => {
@@ -148,70 +132,40 @@ const NotesTable = () => {
     }
   };
 
-  // if (isLoading) {
-  //   return <Loader />;
-  // }
-
   return (
     <Box sx={{ p: 3, display: 'flex', flexDirection: 'column', gap: 3 }}>
       <Typography variant="h4" gutterBottom>
         Lecture Notes
       </Typography>
-      <Box sx={{ display: 'flex', gap: 2, mb: 2 }}>
-        <FormControl fullWidth>
-          <InputLabel>Course</InputLabel>
-          <Select
-            value={selectedCourse}
-            onChange={handleCourseChange}
-            label="Course"
-          >
-            {courses.map(course => (
-              <MenuItem key={course} value={course}>{course}</MenuItem>
-            ))}
-          </Select>
-        </FormControl>
-        <FormControl fullWidth disabled={!selectedCourse}>
-          <InputLabel>Batch</InputLabel>
-          <Select
-            value={selectedBatch}
-            onChange={handleBatchChange}
-            label="Batch"
-          >
-            {batches.map(batch => (
-              <MenuItem key={batch} value={batch}>{batch}</MenuItem>
-            ))}
-          </Select>
-        </FormControl>
-      </Box>
-
-      {selectedCourse && selectedBatch && (
-        <>
-          <Button
-            variant="contained"
-            color="primary"
-            startIcon={<AddIcon />}
-            onClick={() => handleOpenDialog()}
-            sx={{ borderRadius: '20px', boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)' }}
-          >
-            Add
-          </Button>
-          <br /><br />
-          {showLoader ?( <Loader />):(
-          <TableContainer component={Paper} elevation={3} sx={{ borderRadius: '12px' }}>
-            <Table>
-              <TableHead>
-                <TableRow>
-                  <TableCell>Title</TableCell>
-                  <TableCell>Date</TableCell>
-                  <TableCell>Content</TableCell>
-                  <TableCell>Link</TableCell>
-                  <TableCell>File</TableCell>
-                  <TableCell>Actions</TableCell>
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                {notes.map(note => (
-                  <TableRow key={note.id}>
+      <Button
+        variant="contained"
+        color="primary"
+        startIcon={<AddIcon />}
+        onClick={() => handleOpenDialog()}
+        sx={{ borderRadius: '20px', boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)' }}
+      >
+        Add
+      </Button>
+      <br /><br />
+      {showLoader ? (
+        <Loader />
+      ) : (
+        <TableContainer component={Paper} elevation={3} sx={{ borderRadius: '12px' }}>
+          <Table>
+            <TableHead>
+              <TableRow>
+                <TableCell>Title</TableCell>
+                <TableCell>Date</TableCell>
+                <TableCell>Content</TableCell>
+                <TableCell>Link</TableCell>
+                <TableCell>File</TableCell>
+                <TableCell>Actions</TableCell>
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {notes.length > 0 ? (
+                notes.map(note => (
+                  <TableRow key={note._id}>
                     <TableCell>{note.title}</TableCell>
                     <TableCell>{note.date}</TableCell>
                     <TableCell>{note.content}</TableCell>
@@ -234,12 +188,17 @@ const NotesTable = () => {
                       </IconButton>
                     </TableCell>
                   </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </TableContainer>
-        )}
-        </>
+                ))
+              ) : (
+                <TableRow>
+                  <TableCell colSpan={6} align="center">
+                    No notes available
+                  </TableCell>
+                </TableRow>
+              )}
+            </TableBody>
+          </Table>
+        </TableContainer>
       )}
 
       <Dialog open={openDialog} onClose={handleCloseDialog}>
@@ -301,4 +260,3 @@ const NotesTable = () => {
 };
 
 export default NotesTable;
-
