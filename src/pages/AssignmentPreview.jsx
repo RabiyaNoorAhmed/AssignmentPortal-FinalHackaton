@@ -15,6 +15,7 @@ import {
 import { UserContext } from '../context/userContext';
 import Loader from '../components/loader/Loader';
 import SubmitAssignment from './SubmitAssignment';
+import './AssignmentPreview.css'
 
 const AssignmentPreview = ({ onNavigateToSubmit }) => {
   const { currentUser } = useContext(UserContext);
@@ -109,12 +110,12 @@ const AssignmentPreview = ({ onNavigateToSubmit }) => {
   };
 
   return (
-    <Box sx={{ p: 4 }}>
+    <Box className="marginBox" sx={{ p: 4 }}>
       {loading ? (
         <Loader />
       ) : (
         <>
-          <Typography variant="h4" gutterBottom>
+          <Typography className='fontSize' variant="h4" gutterBottom>
             Assignments for {currentUser.course} - {currentUser.batch}
           </Typography>
           <List>
@@ -123,25 +124,32 @@ const AssignmentPreview = ({ onNavigateToSubmit }) => {
               const { color, text } = getStatusButtonProps(status);
 
               return (
-                <ListItem key={assignment._id} sx={{ mb: 2, borderRadius: '5px' }} className="boxshadow">
-                  <ListItemText
-                    primary={assignment.title}
-                    secondary={assignment.description}
-                  />
-                  <Button
-                    variant="contained"
-                    style={{ marginRight: '16px', backgroundColor: color, color: 'black' }}
-                    disabled
-                  >
-                    {text}
-                  </Button>
-                  <Button
-                    variant="contained"
-                    color="primary"
-                    onClick={() => handleOpenDialog(assignment)}
-                  >
-                    View
-                  </Button>
+                <ListItem key={assignment._id} className="boxshadow assignment-item" sx={{ mb: 2, borderRadius: '5px' }}>
+                  <Box sx={{ display: 'flex', flexDirection: 'column', width: '100%' }}>
+                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                      <ListItemText
+                        primary={assignment.title}
+                        secondary={assignment.description}
+                        sx={{ flex: 1 }}
+                      />
+                      <Button
+                        variant="contained"
+                        style={{ backgroundColor: color, color: 'black' }}
+                        disabled
+                      >
+                        {text}
+                      </Button>
+                    </Box>
+                    <Box sx={{ display: 'flex', justifyContent: 'flex-end', marginTop: 1 }}>
+                      <Button
+                        variant="contained"
+                        color="primary"
+                        onClick={() => handleOpenDialog(assignment)}
+                      >
+                        View
+                      </Button>
+                    </Box>
+                  </Box>
                 </ListItem>
               );
             })}
