@@ -61,7 +61,7 @@ const Notes = () => {
 
   return (
     <Box sx={{ p: 4 }}>
-      <Typography variant="h4" gutterBottom>
+      <Typography className='fontSizes' variant="h4" gutterBottom>
         Notes for {currentUser?.course} - {currentUser?.batch}
       </Typography>
   
