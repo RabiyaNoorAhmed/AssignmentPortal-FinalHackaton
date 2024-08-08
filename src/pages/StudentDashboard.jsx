@@ -10,10 +10,10 @@ import SubmitAssignment from './SubmitAssignment';
 import Header from '../components/header/Header';
 import Loader from '../components/loader/Loader';
 import UserProfile from '../components/userprofile/UserProfile';
-import MarkingStu from './MarkingStu'
+import MarkingStu from './MarkingStu';
 import './StudentDashboard.css';
 import { UserContext } from '../context/userContext';
-import Notes from './Notes'
+import Notes from './Notes';
 
 export default function StudentDashboard() {
   const [drawerOpen, setDrawerOpen] = useState(false);
@@ -50,7 +50,6 @@ export default function StudentDashboard() {
   };
 
   const refreshAssignments = async () => {
-    // Use AssignmentPreview's fetchAssignments method or re-fetch
     await fetchAssignments();
   };
 
@@ -67,11 +66,9 @@ export default function StudentDashboard() {
     handleSectionChange('submit-assignment');
   };
 
-  // Add this function to handle submission success
   const handleSubmissionSuccess = (assignmentId) => {
-    // You can refresh assignments or perform other actions here
     console.log(`Assignment with ID ${assignmentId} submitted successfully`);
-    refreshAssignments(); // Refresh the assignments list
+    refreshAssignments();
   };
 
   const renderContent = () => {
@@ -86,7 +83,7 @@ export default function StudentDashboard() {
         return selectedAssignment ? (
           <SubmitAssignment
             assignmentId={selectedAssignment._id}
-            onSubmissionSuccess={handleSubmissionSuccess} // Pass the function here
+            onSubmissionSuccess={handleSubmissionSuccess}
           />
         ) : (
           <Typography variant="h6">No assignment selected</Typography>
@@ -133,7 +130,7 @@ export default function StudentDashboard() {
                         loading ? (
                           <CircularProgress size={24} />
                         ) : (
-                          <Typography >{totalAssignments || 0}</Typography>
+                          <Typography>{totalAssignments || 0}</Typography>
                         )
                       }
                     />
@@ -151,8 +148,8 @@ export default function StudentDashboard() {
   return (
     <Box sx={{ display: 'flex', marginTop: '100px' }}>
       <Sidebar drawerOpen={drawerOpen} toggleDrawer={toggleDrawer} setSelectedSection={setSelectedSection} />
-      <Box component="main" sx={{ flexGrow: 1, bgcolor: 'background.default', p: 3 }}>
-        <Container>
+      <Box component="main" sx={{ flexGrow: 1, bgcolor: 'background.default', p: 3, paddingLeft: 0, paddingRight: 0 }}>
+        <Container sx={{ paddingLeft: 0, paddingRight: 0 }}>
           <Box sx={{ borderRadius: 2, p: 3, mb: 3, backgroundColor: 'background.paper' }}>
             {renderContent()}
           </Box>
