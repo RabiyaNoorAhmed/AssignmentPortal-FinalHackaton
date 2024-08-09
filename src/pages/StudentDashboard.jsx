@@ -11,6 +11,7 @@ import Header from '../components/header/Header';
 import UserProfile from '../components/userprofile/UserProfile';
 import MarkingStu from './MarkingStu';
 import Notes from './Notes';
+import ChatApp from '../components/teacher/Chat'
 import './StudentDashboard.css';
 import { UserContext } from '../context/userContext';
 
@@ -128,6 +129,8 @@ export default function StudentDashboard() {
         return <MarkingStu />;
       case 'User Profile':
         return <UserProfile />;
+        case 'ChatApp':
+        return <ChatApp />;
       default:
         return (
           <>

@@ -236,16 +236,17 @@ const Marking = () => {
 
   // Determine Pass/Fail based on percentage (70% criteria)
   const determinePassFail = (marks) => {
-    const totalMarks = selectedAssignmentData?.totalMarks || 100; // Default to 100 if not available
+    const totalMarks = selectedAssignmentData?.totalMarks || 100; // Use a default value if necessary
     const passingPercentage = 50;
     const percentage = (marks / totalMarks) * 100;
-
+  
     if (percentage >= passingPercentage) {
       return <Typography sx={{ color: 'green' }}>Pass</Typography>;
     } else {
       return <Typography sx={{ color: 'red' }}>Fail</Typography>;
     }
   };
+  
 
   return (
     <Box sx={{ p: 3, display: 'flex', flexDirection: 'column', gap: 2 }}>

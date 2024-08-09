@@ -6,7 +6,7 @@ import {
   Assignment, Book, BookOutlined, Chat, Person, Menu as MenuIcon, ChevronLeft, Dashboard, MoreVert, Close, Grade
 } from '@mui/icons-material';
 import UserProfile from '../components/userprofile/UserProfile'; // Import your UserProfile component
-
+import ChatApp from '../components/teacher/Chat'
 export default function Sidebar({ drawerOpen, toggleDrawer, setSelectedSection, selectedSection }) {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
@@ -101,7 +101,7 @@ export default function Sidebar({ drawerOpen, toggleDrawer, setSelectedSection, 
           </ListItemIcon>
           {!miniDrawer && <ListItemText primary="User Profile" />}
         </ListItem>
-        <ListItem
+        {/* <ListItem
           button
           sx={{ py: miniDrawer ? 0.75 : 1 }}
         >
@@ -109,6 +109,16 @@ export default function Sidebar({ drawerOpen, toggleDrawer, setSelectedSection, 
             <Chat />
           </ListItemIcon>
           {!miniDrawer && <ListItemText primary="Chat" />}
+        </ListItem> */}
+        <ListItem
+          button
+          onClick={() => handleSectionChange('ChatApp')}
+          sx={{ py: miniDrawer ? 0.75 : 1 }}
+        >
+          <ListItemIcon sx={{ minWidth: miniDrawer ? 0 : 56 }}>
+            <Chat />
+          </ListItemIcon>
+          {!miniDrawer && <ListItemText primary="ChatApp" />}
         </ListItem>
       </List>
     </>
