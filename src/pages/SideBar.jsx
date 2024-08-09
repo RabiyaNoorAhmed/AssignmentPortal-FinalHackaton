@@ -3,10 +3,10 @@ import {
   Drawer, List, ListItem, ListItemIcon, ListItemText, Divider, IconButton, useMediaQuery, useTheme
 } from '@mui/material';
 import {
-  Assignment, Book, BookOutlined, Chat, Person, Menu as MenuIcon, ChevronLeft, Dashboard, MoreVert, Close, Grade
+  Assignment, Book, BookOutlined, Person, Menu as MenuIcon, ChevronLeft, Dashboard, MoreVert, Close, Grade
 } from '@mui/icons-material';
 import UserProfile from '../components/userprofile/UserProfile'; // Import your UserProfile component
-
+import Chat from '../components/teacher/Chat'
 export default function Sidebar({ drawerOpen, toggleDrawer, setSelectedSection, selectedSection }) {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));

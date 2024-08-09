@@ -125,22 +125,23 @@ const AssignmentPreview = ({ onNavigateToSubmit }) => {
 
               return (
                 <ListItem key={assignment._id} className="boxshadow assignment-item" sx={{ mb: 2, borderRadius: '5px' }}>
-                  <Box sx={{ display: 'flex', flexDirection: 'column', width: '100%' }}>
-                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                      <ListItemText
+                  <Box className='box' sx={{ display: 'flex',  justifyContent: 'space-between', width: '100%', flexWrap: 'wrap' }}>
+                  <ListItemText
                         primary={assignment.title}
                         secondary={assignment.description}
                         sx={{ flex: 1 }}
                       />
+                      
+                    <Box className='pending_box' sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                     
                       <Button
                         variant="contained"
-                        style={{ backgroundColor: color, color: 'white', fontWeight:'bold' }}
+                        style={{ backgroundColor: color, color: 'white', fontWeight:'bold', marginRight: '10px'  }}
                         disabled
                       >
                         {text}
                       </Button>
-                    </Box>
-                    <Box sx={{ display: 'flex', justifyContent: 'flex-end', marginTop: 1 }}>
+
                       <Button
                         variant="contained"
                         color="primary"
@@ -149,6 +150,9 @@ const AssignmentPreview = ({ onNavigateToSubmit }) => {
                         View
                       </Button>
                     </Box>
+                   
+                  
+                  
                   </Box>
                 </ListItem>
               );

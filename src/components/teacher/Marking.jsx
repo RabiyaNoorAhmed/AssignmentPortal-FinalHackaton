@@ -187,7 +187,7 @@ const Marking = () => {
     if (!selectedAssignment) return null;
   
     // Aggregate submission data into Pass/Fail categories
-    const totalMarks = selectedAssignmentData?.totalMarks || 100; // Default to 100 if not available
+    const totalMarks = selectedAssignmentData.totalMarks || 100; // Default to 100 if not available
     const passingPercentage = 50;
   
     const passFailData = submissions.reduce(

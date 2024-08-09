@@ -11,6 +11,16 @@
    .date{
     font-size: 0.7rem !important;
    }
+   .box{
+      display: flex;
+      flex-direction: column;
+   }
+   .pending_box{
+     display: flex;
+     justify-content: center !important;
+     align-items: center !important;
+     margin-top: 10px;
+   }
 }
 
 
