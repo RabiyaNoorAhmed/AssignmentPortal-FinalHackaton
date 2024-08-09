@@ -1,0 +1,17 @@
+@media (max-width:600px){
+   .marginBox{
+    font-size: 0.8rem !important;
+    width: 270px;
+    padding: 0px !important;
+    margin: 0px !important;
+   }
+   .fontSize{
+    font-size: 1.3rem !important;
+   }
+   .date{
+    font-size: 0.7rem !important;
+   }
+}
+
+
+  

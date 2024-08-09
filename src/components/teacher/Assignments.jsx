@@ -212,7 +212,7 @@ const Assignments = () => {
   };
 
   return (
-    <Box sx={{ p: 3, display: 'flex', flexDirection: 'column', gap: 3 }}>
+    <Box sx={{ p: 1, display: 'flex', flexDirection: 'column', gap: 1.5 , mt: -3,}}>
       <Typography variant="h4" gutterBottom>
         Assignments
       </Typography>
@@ -233,7 +233,7 @@ const Assignments = () => {
           {showLoader ? (
             <Loader />
           ) : (
-            <TableContainer component={Paper} elevation={3} sx={{ borderRadius: '12px' }}>
+            <TableContainer component={Paper} elevation={3} sx={{ borderRadius: '12px', mt: -7 }}>
               <Table>
                 <TableHead>
                   <TableRow>

@@ -71,6 +71,7 @@ export default function StudentDashboard() {
   const handleSubmissionSuccess = (assignmentId) => {
     console.log(`Assignment with ID ${assignmentId} submitted successfully`);
     refreshAssignments();
+    refreshAssignments();
   };
 
   const renderContent = () => {
@@ -143,6 +144,7 @@ export default function StudentDashboard() {
                           <CircularProgress size={24} />
                         ) : (
                           <Typography>{totalAssignments || 0}</Typography>
+                      
                         )
                       }
                     />
@@ -160,8 +162,8 @@ export default function StudentDashboard() {
   return (
     <Box sx={{ display: 'flex', marginTop: '100px' }}>
       <Sidebar drawerOpen={drawerOpen} toggleDrawer={toggleDrawer} setSelectedSection={setSelectedSection} />
-      <Box component="main" sx={{ flexGrow: 1, bgcolor: 'background.default', p: 3 }}>
-        <Container>
+      <Box component="main" sx={{ flexGrow: 1, bgcolor: 'background.default', p: 3, paddingLeft: 0, paddingRight: 0 }}>
+        <Container sx={{ paddingLeft: 0, paddingRight: 0 }}>
           <Box sx={{ borderRadius: 2, p: 3, mb: 3, backgroundColor: 'background.paper' }}>
             {renderContent()}
           </Box>
