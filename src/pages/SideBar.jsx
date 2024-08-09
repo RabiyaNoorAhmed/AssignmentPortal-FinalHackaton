@@ -3,7 +3,7 @@ import {
   Drawer, List, ListItem, ListItemIcon, ListItemText, Divider, IconButton, useMediaQuery, useTheme
 } from '@mui/material';
 import {
-  Assignment, Book, BookOutlined, Person, Menu as MenuIcon, ChevronLeft, Dashboard, MoreVert, Close, Grade
+  Assignment, Book,Chat, BookOutlined, Person, Menu as MenuIcon, ChevronLeft, Dashboard, MoreVert, Close, Grade
 } from '@mui/icons-material';
 import UserProfile from '../components/userprofile/UserProfile'; // Import your UserProfile component
 import ChatApp from '../components/teacher/Chat'
@@ -41,16 +41,7 @@ export default function Sidebar({ drawerOpen, toggleDrawer, setSelectedSection, 
           </ListItemIcon>
           {!miniDrawer && <ListItemText primary="Dashboard" />}
         </ListItem>
-        {/* <ListItem
-          button
-          onClick={() => handleSectionChange('Course')}
-          sx={{ py: miniDrawer ? 0.75 : 1 }}
-        >
-          <ListItemIcon sx={{ minWidth: miniDrawer ? 0 : 56 }}>
-            <Book />
-          </ListItemIcon>
-          {!miniDrawer && <ListItemText primary="Course Outline" />}
-        </ListItem> */}
+    
         <ListItem
           button
           onClick={() => handleSectionChange('view-assignments')}
@@ -101,16 +92,7 @@ export default function Sidebar({ drawerOpen, toggleDrawer, setSelectedSection, 
           </ListItemIcon>
           {!miniDrawer && <ListItemText primary="User Profile" />}
         </ListItem>
-        {/* <ListItem
-          button
-          
-          sx={{ py: miniDrawer ? 0.75 : 1 }}
-        >
-          <ListItemIcon sx={{ minWidth: miniDrawer ? 0 : 56 }}>
-            <Chat />
-          </ListItemIcon>
-          {!miniDrawer && <ListItemText primary="Chat" />}
-        </ListItem> */}
+       
         <ListItem
           button
           onClick={() => handleSectionChange('ChatApp')}
