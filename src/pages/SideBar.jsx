@@ -108,7 +108,7 @@ export default function Sidebar({ drawerOpen, toggleDrawer, setSelectedSection, 
           <ListItemIcon sx={{ minWidth: miniDrawer ? 0 : 56 }}>
             <Chat />
           </ListItemIcon>
-          {!miniDrawer && <ListItemText primary="Chat" />}
+          {!miniDrawer && <ListItemText primary="Chat" href="https://smit-chat-app.onrender.com"/>}
         </ListItem>
       </List>
     </>
