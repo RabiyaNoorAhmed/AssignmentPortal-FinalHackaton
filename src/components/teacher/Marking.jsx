@@ -16,6 +16,7 @@ import {
   MenuItem,
   useTheme,
   IconButton,
+  useMediaQuery,
 } from '@mui/material';
 import { styled } from '@mui/system';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, Legend, CartesianGrid } from 'recharts';
@@ -71,6 +72,7 @@ const Marking = () => {
   const [assignments, setAssignments] = useState(initialAssignments);
   const [students, setStudents] = useState(initialStudents);
   const theme = useTheme();
+  const isSmallScreen = useMediaQuery('(max-width:600px)');
 
   const handleCourseChange = (event) => {
     setSelectedCourse(event.target.value);
@@ -168,13 +170,13 @@ const Marking = () => {
       <Box sx={{ mb: 3 }}>
         <Typography variant="h6" gutterBottom>Assignment Statistics Chart</Typography>
         <BarChart
-          width={600}
+          width={isSmallScreen ? 250 : 600} // Responsive width
           height={300}
           data={stats.studentsWithAssignment.map(student => ({
             name: student.name,
             marks: student.assignments.find(assignment => assignment.id === selectedAssignment)?.marks || 0,
           }))}
-          margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
+          margin={{ top: -20, right: 30, left: 10, bottom: 5 }}
         >
           <CartesianGrid strokeDasharray="3 3" />
           <XAxis dataKey="name" />
