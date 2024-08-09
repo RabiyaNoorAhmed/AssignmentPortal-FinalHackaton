@@ -9,13 +9,14 @@
 
 .boxshadow1{
     margin-top: 100px;
+   
 }
-
 
   
 @media (max-width:550px){
      .boxshadow{
-    padding: 20px;
+    padding: 30px;
+    
     }
     
     }
