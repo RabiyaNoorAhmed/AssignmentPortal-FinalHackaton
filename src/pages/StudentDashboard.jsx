@@ -3,7 +3,7 @@ import axios from 'axios';
 import {
   Card, Box, Typography, CardHeader, Container, Grid, Avatar, CircularProgress
 } from '@mui/material';
-import { pink } from '@mui/material/colors';
+import { green, pink, blue} from '@mui/material/colors';
 import Sidebar from './SideBar';
 import AssignmentPreview from './AssignmentPreview';
 import SubmitAssignment from './SubmitAssignment';
@@ -11,14 +11,16 @@ import Header from '../components/header/Header';
 import UserProfile from '../components/userprofile/UserProfile';
 import MarkingStu from './MarkingStu';
 import Notes from './Notes';
-import { UserContext } from '../context/userContext';
 import './StudentDashboard.css';
-import Loader from '../components/loader/Loader';
+import { UserContext } from '../context/userContext';
+
 export default function StudentDashboard() {
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [selectedSection, setSelectedSection] = useState('');
   const [totalAssignments, setTotalAssignments] = useState(0);
-  const [loading, setLoading] = useState(true); // Initialize as true to show loader initially
+  const [totalLectures, setTotalLectures] = useState(0);
+  const [totalPendingAssignments, setTotalPendingAssignments] = useState(0);
+  const [loading, setLoading] = useState(false);
   const [selectedAssignment, setSelectedAssignment] = useState(null);
 
   const { currentUser } = useContext(UserContext);
@@ -26,6 +28,8 @@ export default function StudentDashboard() {
   useEffect(() => {
     if (currentUser && currentUser.course && currentUser.batch) {
       fetchAssignments();
+      fetchLectures();
+      fetchPendingAssignments();
     } else {
       console.warn('Current user data is not yet available or incomplete:', currentUser);
     }
@@ -44,15 +48,43 @@ export default function StudentDashboard() {
     } catch (error) {
       console.error('Error fetching total assignments:', error.response ? error.response.data : error.message);
     } finally {
-      setTimeout(() => {
-        setLoading(false); // Stop loading
-        setShowLoader(false); // Hide loader
-      }, 3000);
+      setLoading(false);
     }
   };
 
-  const refreshAssignments = async () => {
-    await fetchAssignments();
+  const fetchLectures = async () => {
+    setLoading(true);
+    try {
+      const response = await axios.get(`${import.meta.env.VITE_BASE_URL}/lectures/count`, {
+        params: {
+          course: currentUser.course,
+          batch: currentUser.batch
+        }
+      });
+      setTotalLectures(response.data.totalLectures || 0);
+    } catch (error) {
+      console.error('Error fetching total lectures:', error.response ? error.response.data : error.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+
+  const fetchPendingAssignments = async () => {
+    setLoading(true);
+    try {
+      const response = await axios.get(`${import.meta.env.VITE_BASE_URL}/assignments/pending/count`, {
+        params: {
+          course: currentUser.course,
+          batch: currentUser.batch
+        }
+      });
+      setTotalPendingAssignments(response.data.totalPendingAssignments || 0);
+    } catch (error) {
+      console.error('Error fetching pending assignments:', error.response ? error.response.data : error.message);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const toggleDrawer = () => {
@@ -70,19 +102,10 @@ export default function StudentDashboard() {
 
   const handleSubmissionSuccess = (assignmentId) => {
     console.log(`Assignment with ID ${assignmentId} submitted successfully`);
-    refreshAssignments();
-    refreshAssignments();
+    fetchAssignments(); // Refresh assignments after submission
   };
 
   const renderContent = () => {
-    if (loading) {
-      return (
-        <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '80vh' }}>
-          <Loader />
-        </Box>
-      );
-    }
-
     if (!currentUser) {
       return <Typography variant="h6">Loading user data...</Typography>;
     }
@@ -144,12 +167,59 @@ export default function StudentDashboard() {
                           <CircularProgress size={24} />
                         ) : (
                           <Typography>{totalAssignments || 0}</Typography>
-                      
                         )
                       }
                     />
                   </Card>
                 </Grid>
+
+                <Grid item xs={12} sm={6} md={4}>
+                  <Card
+                    sx={{ display: 'flex', alignItems: 'center', backgroundColor: green[50], cursor: 'pointer' }}
+                    onClick={() => handleSectionChange('view-lectures')}
+                  >
+                    <CardHeader
+                      avatar={
+                        <Avatar sx={{ bgcolor: green[500] }}>
+                          <Typography variant="h6">TL</Typography>
+                        </Avatar>
+                      }
+                      title="Total Lectures"
+                      subheader={
+                        loading ? (
+                          <CircularProgress size={24} />
+                        ) : (
+                          <Typography>{totalLectures || 0}</Typography>
+                        )
+                      }
+                    />
+                  </Card>
+                </Grid>
+
+
+                <Grid item xs={12} sm={6} md={4}>
+                  <Card
+                    sx={{ display: 'flex', alignItems: 'center', backgroundColor: blue[50], cursor: 'pointer' }}
+                    onClick={() => handleSectionChange('view-pending-assignments')}
+                  >
+                    <CardHeader
+                      avatar={
+                        <Avatar sx={{ bgcolor: blue[500] }}>
+                          <Typography variant="h6">PA</Typography>
+                        </Avatar>
+                      }
+                      title="Pending Assignments"
+                      subheader={
+                        loading ? (
+                          <CircularProgress size={24} />
+                        ) : (
+                          <Typography>{totalPendingAssignments || 0}</Typography>
+                        )
+                      }
+                    />
+                  </Card>
+                </Grid>
+
 
                 {/* Other cards */}
               </Grid>
@@ -162,8 +232,8 @@ export default function StudentDashboard() {
   return (
     <Box sx={{ display: 'flex', marginTop: '100px' }}>
       <Sidebar drawerOpen={drawerOpen} toggleDrawer={toggleDrawer} setSelectedSection={setSelectedSection} />
-      <Box component="main" sx={{ flexGrow: 1, bgcolor: 'background.default', p: 3, paddingLeft: 0, paddingRight: 0 }}>
-        <Container sx={{ paddingLeft: 0, paddingRight: 0 }}>
+      <Box component="main" sx={{ flexGrow: 1, bgcolor: 'background.default', p: 3 }}>
+        <Container>
           <Box sx={{ borderRadius: 2, p: 3, mb: 3, backgroundColor: 'background.paper' }}>
             {renderContent()}
           </Box>
@@ -172,3 +242,4 @@ export default function StudentDashboard() {
     </Box>
   );
 }
+

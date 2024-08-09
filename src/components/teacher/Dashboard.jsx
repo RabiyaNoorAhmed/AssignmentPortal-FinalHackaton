@@ -1,4 +1,5 @@
 
+
 import React, { useState, useEffect, useContext } from 'react';
 import axios from 'axios';
 import {
@@ -18,9 +19,10 @@ function Dashboard() {
   const [selectedBatch, setSelectedBatch] = useState(localStorage.getItem('selectedBatch') || '');
   const [studentCount, setStudentCount] = useState(0);
   const [totalAssignments, setTotalAssignments] = useState(0);
-  const { currentUser } = useContext(UserContext);
+  const [totalLectures, setTotalLectures] = useState(0); // New state for lectures
   const [loading, setLoading] = useState(false);
   const [openDialog, setOpenDialog] = useState(null);
+  const { currentUser } = useContext(UserContext);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -36,6 +38,12 @@ function Dashboard() {
             params: { course: selectedCourse, batch: selectedBatch }
           });
           setTotalAssignments(assignmentsResponse.data.totalAssignments);
+
+          const lecturesResponse = await axios.get(`${import.meta.env.VITE_BASE_URL}/lectures/count`, {
+            params: { course: selectedCourse, batch: selectedBatch }
+          });
+          setTotalLectures(lecturesResponse.data.totalLectures);
+
         } catch (error) {
           console.error('Error fetching data:', error.response ? error.response.data : error.message);
         } finally {
@@ -77,7 +85,6 @@ function Dashboard() {
           {currentUser && (
             <Box sx={{ alignItems: 'center', mb: 1, backgroundColor: '#c6d9fe', padding: '10px', borderRadius: '5px', boxShadow: 'rgba(0, 0, 0, 0.35) 0px 5px 15px' }}>
               <Avatar alt={currentUser.name} src={currentUser.avatar} sx={{ width: 100, height: 100, marginRight: 1 }} />
-              <br />
               <Typography variant="body1" sx={{ marginRight: 2, color: 'black', fontSize: '30px' }}>
                 {currentUser.name}
               </Typography>
@@ -151,12 +158,30 @@ function Dashboard() {
           </Card>
         </Grid>
 
+        {/* Total Lectures Card */}
+        <Grid item xs={12} sm={6} md={4}>
+          <Card
+            sx={{ display: 'flex', alignItems: 'center', backgroundColor: '#e0f7fa', cursor: 'pointer' }}
+            onClick={() => handleDialogOpen('totalLectures')}
+          >
+            <CardHeader
+              avatar={
+                <Avatar sx={{ bgcolor: '#00bcd4' }}>
+                  TL
+                </Avatar>
+              }
+              title="Total Lectures"
+              subheader={loading ? <CircularProgress size={24} /> : totalLectures}
+            />
+          </Card>
+        </Grid>
+
         {/* Other Cards */}
         {/* Implement similar cards for Total Courses, Active Courses */}
       </Grid>
 
       {/* Dialogs for each card with custom transition */}
-      {['totalCourses', 'totalStudents', 'totalAssignments', 'activeCourses'].map(dialogType => (
+      {['totalCourses', 'totalStudents', 'totalAssignments', 'totalLectures', 'activeCourses'].map(dialogType => (
         <CSSTransition
           in={openDialog === dialogType}
           timeout={500}
