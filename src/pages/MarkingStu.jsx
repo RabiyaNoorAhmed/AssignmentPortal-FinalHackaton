@@ -1,131 +1,192 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useContext } from "react";
 import {
-  TextField, Button, MenuItem, Select, InputLabel, FormControl, Typography, Box, Grid
-} from '@mui/material';
-import { Bar } from 'react-chartjs-2';
-import { Chart as ChartJS, CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend } from 'chart.js';
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  Paper,
+  Box,
+  Typography,
+  CircularProgress,
+} from "@mui/material";
+import axios from "axios";
+import { UserContext } from "../context/userContext";
+import { BarChart, Bar, Cell, Tooltip, Legend, XAxis, YAxis } from "recharts";
+import Loader from '../components/loader/Loader';
+const StudentAssignments = () => {
+  const [assignments, setAssignments] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const { currentUser } = useContext(UserContext);
 
-ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend);
+  useEffect(() => {
+    const fetchAssignments = async () => {
+      setLoading(true);
+      const token = localStorage.getItem("authToken");
+      const studentId = currentUser.id;
 
-const AssignmentMarks = () => {
-  const [rollNumber, setRollNumber] = useState('');
-  const [name, setName] = useState('');
-  const [selectedCourse, setSelectedCourse] = useState('');
-  const [selectedBatch, setSelectedBatch] = useState('');
-  const [marks, setMarks] = useState(null);
+      if (!token || !studentId) {
+        console.error("Token or student ID not found");
+        setLoading(false);
+        return;
+      }
 
-  const courses = ['Graphic Designing', 'Web & App', 'Flutter'];
-  const batches = ['Batch 11', 'Batch 12', 'Batch 13'];
+      try {
+        const response = await axios.get(
+          `${import.meta.env.VITE_BASE_URL}/assignments/assignments`,
+          {
+            headers: { Authorization: `Bearer ${token}` },
+            params: { studentId },
+          }
+        );
+        console.log("Fetched assignments:", response.data); // Log data
+        setAssignments(response.data);
+      } catch (error) {
+        console.error(
+          "Failed to fetch assignments:",
+          error.response ? error.response.data : error.message
+        );
+      } finally {
+        setTimeout(() => {
+          setLoading(false); // Stop loading
+          setShowLoader(false); // Hide loader
+        }, 3000);
+      }
+    };
 
-  const handleViewMarks = () => {
-    // Fetch marks data (mock data here)
-    const fetchedMarks = [
-      { title: 'Assignment 1', number: 1, marks: 85 },
-      { title: 'Assignment 2', number: 2, marks: 90 },
-      { title: 'Assignment 3', number: 3, marks: 75 },
-    ];
-    setMarks(fetchedMarks);
+    if (currentUser) {
+      fetchAssignments();
+    }
+  }, [currentUser]);
+
+  const determinePassFail = (marks, totalMarks) => {
+    if (totalMarks === 0 || totalMarks === undefined || totalMarks === null)
+      return "Pending"; // Handle edge cases
+    const passingPercentage = 50; // Define the passing percentage
+    const percentage = (marks / totalMarks) * 100;
+
+    return percentage >= passingPercentage ? "Pass" : "Fail";
   };
 
-  const isButtonEnabled = rollNumber && name && selectedCourse && selectedBatch;
-
-  const chartData = {
-    labels: marks ? marks.map(m => m.title) : [],
-    datasets: [
-      {
-        label: 'Marks',
-        data: marks ? marks.map(m => m.marks) : [],
-        backgroundColor: 'rgba(75, 192, 192, 0.2)',
-        borderColor: 'rgba(75, 192, 192, 1)',
-        borderWidth: 1,
-      },
-    ],
+  const getStatusColor = (status) => {
+    switch (status) {
+      case "Pass":
+        return "green";
+      case "Fail":
+        return "red";
+      default: // Assuming default is 'Pending'
+        return "orange"; // Or yellow, depending on your preference
+    }
   };
+
+  // Prepare data for the bar chart
+  const barData = [
+    {
+      name: "Pass",
+      value: assignments.filter(
+        (assignment) => assignment.passFailStatus === "Pass"
+      ).length,
+    },
+    {
+      name: "Fail",
+      value: assignments.filter(
+        (assignment) => assignment.passFailStatus === "Fail"
+      ).length,
+    },
+    {
+      name: "Pending",
+      value: assignments.filter(
+        (assignment) => assignment.passFailStatus === "Pending"
+      ).length,
+    },
+  ];
+
+  const COLORS = ["#4CAF50", "#F44336", "#FFC107"];
 
   return (
-    <Box sx={{ padding: 3 }}>
+    <Box sx={{ p: 3 }}>
       <Typography variant="h4" gutterBottom>
-        Assignment Marks
+        My Assignments
       </Typography>
-      <Box component="form" sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-        <TextField
-          label="Roll Number"
-          value={rollNumber}
-          onChange={(e) => setRollNumber(e.target.value)}
-          required
-        />
-        <TextField
-          label="Name"
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-          required
-        />
-        <FormControl fullWidth required>
-          <InputLabel>Select Course</InputLabel>
-          <Select
-            value={selectedCourse}
-            onChange={(e) => setSelectedCourse(e.target.value)}
-            label="Select Course"
-          >
-            {courses.map((course) => (
-              <MenuItem key={course} value={course}>
-                {course}
-              </MenuItem>
-            ))}
-          </Select>
-        </FormControl>
-        <FormControl fullWidth required>
-          <InputLabel>Select Batch</InputLabel>
-          <Select
-            value={selectedBatch}
-            onChange={(e) => setSelectedBatch(e.target.value)}
-            label="Select Batch"
-          >
-            {batches.map((batch) => (
-              <MenuItem key={batch} value={batch}>
-                {batch}
-              </MenuItem>
-            ))}
-          </Select>
-        </FormControl>
-        <Button
-          variant="contained"
-          color="primary"
-          onClick={handleViewMarks}
-          disabled={!isButtonEnabled}
-        >
-          View Marks
-        </Button>
-      </Box>
-      {marks && (
+      {loading ? (
+        <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
+          <Loader />
+        </Box>
+      ) : (
         <>
-          <Box sx={{ marginTop: 3 }}>
-            <Typography variant="h6" gutterBottom>
-              Assignment Marks
-            </Typography>
-            <Grid container spacing={2}>
-              <Grid item xs={12} md={6}>
-                <Typography variant="body1">
-                  <strong>Assignments:</strong>
-                </Typography>
-                {marks.map((assignment, index) => (
-                  <Typography key={index} variant="body2">
-                    {assignment.title} (Assignment {assignment.number}): {assignment.marks} Marks
-                  </Typography>
+          <TableContainer component={Paper} elevation={3} >
+            <Table>
+              <TableHead>
+                <TableRow>
+                  <TableCell>
+                    <b>Assignment Title</b>
+                  </TableCell>
+                  <TableCell>
+                    <b>Marks</b>
+                  </TableCell>
+                  <TableCell>
+                    <b>Remarks</b>
+                  </TableCell>
+                  <TableCell>
+                    <b>Pass/Fail</b>
+                  </TableCell>
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {assignments.map((assignment) => (
+                  <TableRow key={assignment._id}>
+                    <TableCell>{assignment.title}</TableCell>
+                    <TableCell>
+                      {`${assignment.marks !== undefined ? assignment.marks : "0"}/${
+                        assignment.totalMarks
+                      }`}
+                    </TableCell>
+                    <TableCell>{assignment.comments || "N/A"}</TableCell>
+                    <TableCell
+                      style={{
+                        color: getStatusColor(assignment.passFailStatus),
+                        fontWeight: "bold",
+                      }}
+                    >
+                      {assignment.passFailStatus ? assignment.passFailStatus : "Pending"}
+                    </TableCell>
+                  </TableRow>
                 ))}
-              </Grid>
-              <Grid item xs={12} md={6}>
-                <Typography variant="body1">
-                  <strong>Marks Chart:</strong>
-                </Typography>
-                <Bar data={chartData} options={{ responsive: true }} />
-              </Grid>
-            </Grid>
-          </Box>
+              </TableBody>
+            </Table>
+
+            {/* Bar chart for assignment statuses */}
+           
+          </TableContainer>
+          <Typography variant="h5" gutterBottom sx={{ mt: 4 }}>
+              Assignment Status Distribution
+            </Typography>
+            <BarChart
+              width={500}
+              height={300}
+              data={barData}
+              margin={{
+                top: 20,
+                right: 30,
+                left: 20,
+                bottom: 5,
+              }}
+            >
+              <XAxis dataKey="name" />
+              <YAxis allowDecimals={false} />
+              <Tooltip />
+              <Legend />
+              <Bar dataKey="value" fill="#8884d8">
+                {barData.map((entry, index) => (
+                  <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                ))}
+              </Bar>
+            </BarChart>
         </>
       )}
     </Box>
   );
 };
 
-export default AssignmentMarks;
+export default StudentAssignments;

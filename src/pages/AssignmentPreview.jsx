@@ -130,7 +130,7 @@ const AssignmentPreview = ({ onNavigateToSubmit }) => {
                   />
                   <Button
                     variant="contained"
-                    style={{ marginRight: '16px', backgroundColor: color, color: 'black' }}
+                    style={{ marginRight: '16px', backgroundColor: color, color: 'white', fontWeight:'bold' }}
                     disabled
                   >
                     {text}

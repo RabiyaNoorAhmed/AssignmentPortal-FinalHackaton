@@ -131,8 +131,9 @@ const UserProfile = () => {
             )}
           </form>
         </div>
+    
         <Typography variant='h4' style={{ marginTop: '1rem' }}>
-          {name}
+          {currentUser.name}
         </Typography>
         <form onSubmit={updateUserDetails} style={{ marginTop: '2rem', width: '100%' }}>
           <TextField

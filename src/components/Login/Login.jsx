@@ -1,21 +1,40 @@
-import React, { useState, useContext } from 'react';
+// src/pages/Login.jsx
+import React, { useState, useContext, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { toast } from 'react-toastify';
 import { Box, TextField, Button, Container, Typography, Avatar } from '@mui/material';
 import Logo from '../../assets/images/logo.png';
-import Loader from '../../components/loader/Loader'; // Adjust the import path if necessary
+import Loader from '../../components/loader/Loader';
 import { UserContext } from '../../context/userContext';
 
 const Login = () => {
   const navigate = useNavigate();
-  const { setCurrentUser } = useContext(UserContext);
+  const { currentUser, setCurrentUser } = useContext(UserContext);
   const [formData, setFormData] = useState({
     email: '',
     password: ''
   });
-  const [isLoading, setIsLoading] = useState(false); // State to control loading spinner
-  const [showLoader, setShowLoader] = useState(false); // State to manage loader visibility
+  const [isLoading, setIsLoading] = useState(false);
+  const [showLoader, setShowLoader] = useState(false);
+
+  useEffect(() => {
+    if (currentUser) {
+      // Show loader before redirecting
+      setShowLoader(true);
+      const redirectToDashboard = () => {
+        if (currentUser.role === 'teacher') {
+          navigate('/teacher');
+        } else if (currentUser.role === 'student') {
+          navigate('/student');
+        }
+      };
+      setTimeout(() => {
+        setShowLoader(false);
+        redirectToDashboard();
+      }, 1000); // Adjust delay as needed (1000ms = 1 second)
+    }
+  }, [currentUser, navigate]);
 
   const handleInputChange = e => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -23,40 +42,37 @@ const Login = () => {
 
   const submitHandler = async (event) => {
     event.preventDefault();
-    setIsLoading(true); // Show loader while request is being processed
-    setShowLoader(true); // Show loader with delay
+    setIsLoading(true);
+    setShowLoader(true);
 
     try {
       const response = await axios.post(`${import.meta.env.VITE_BASE_URL}/users/login`, formData, { withCredentials: true });
       const { token, id, name, role, avatar, course, batch } = response.data;
 
-      // Store token and user details in localStorage
       localStorage.setItem('authToken', token);
       localStorage.setItem('user', JSON.stringify({ name, id, role, avatar, token, course, batch }));
 
-      // Update UserContext
       setCurrentUser({ name, id, role, avatar, token, course, batch });
 
       toast.success("Login successful!");
 
-      // Navigate based on role
-      if (role === 'teacher') {
-        navigate('/teacher');
-      } else if (role === 'student') {
-        navigate('/student');
-      }
+      setTimeout(() => {
+        setShowLoader(false);
+        if (role === 'teacher') {
+          navigate('/teacher');
+        } else if (role === 'student') {
+          navigate('/student');
+        }
+      }, 1000); // Adjust delay as needed (1000ms = 1 second)
     } catch (error) {
       if (error.response) {
         toast.error(error.response.data.message || "Login failed!");
       } else {
         toast.error("An error occurred. Please try again.");
       }
+      setShowLoader(false); // Hide loader on error
     } finally {
-      // Ensure the loader is displayed for at least 3 seconds
-      setTimeout(() => {
-        setIsLoading(false); // Hide loader after request completes
-        setShowLoader(false); // Hide loader
-      }, 3000);
+      setIsLoading(false);
     }
   };
 
@@ -126,3 +142,4 @@ const Login = () => {
 };
 
 export default Login;
+

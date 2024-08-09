@@ -1,146 +1,174 @@
-import React, { useState } from 'react';
+import React, { useState, useContext, useEffect } from 'react';
 import {
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TableRow,
-  TextField,
-  Paper,
-  Box,
-  Typography,
-  FormControl,
-  InputLabel,
-  Select,
-  MenuItem,
-  useTheme,
-  IconButton,
+  Table, TableBody, TableCell, TableContainer, TableHead, TableRow,
+  TextField, Paper, Box, Typography, FormControl, InputLabel, Select,
+  MenuItem, useTheme, IconButton, CircularProgress, DialogTitle, DialogContent, Dialog, Button
 } from '@mui/material';
 import { styled } from '@mui/system';
-import { BarChart, Bar, XAxis, YAxis, Tooltip, Legend, CartesianGrid } from 'recharts';
+import { PieChart, Pie, Cell, Tooltip, Legend } from 'recharts';
 import LockIcon from '@mui/icons-material/Lock';
 import LockOpenIcon from '@mui/icons-material/LockOpen';
-
-const courses = ['Graphics Designing', 'Web and App Development', 'Tecno Kids', 'UI UX Designing', 'Generative Ai & Chatbox', 'Digital Marketing', 'Amazon Mastery'];
-const batches = ['Batch 11', 'Batch 12', 'Batch 13', 'Batch 14', 'Batch 15', 'Batch 16', 'Batch 17'];
-
-const initialAssignments = [
-  { id: 1, title: 'Math Homework', totalMarks: 50, locked: false },
-  { id: 2, title: 'History Essay', totalMarks: 100, locked: false },
-  { id: 3, title: 'Science Project', totalMarks: 75, locked: false },
-];
-
-const initialStudents = [
-  {
-    id: 1,
-    rollNo: 'A01',
-    name: 'Alice',
-    course: 'Graphics Designing',
-    batch: 'Batch 11',
-    assignments: [
-      { id: 1, marks: 40, link: 'http://example.com/alice-math-homework', code: 'XYZ123', uploadedAt: '2024-07-24T10:00:00Z' },
-      { id: 2, marks: 90, link: 'http://example.com/alice-history-essay', code: 'ABC456', uploadedAt: '2024-07-25T11:00:00Z' },
-    ],
-  },
-  // Add more student data as needed
-];
-
-const StyledTableCell = styled(TableCell)({
-  fontWeight: 'bold',
-  fontSize: '1rem',
-});
-
-const StyledTableRow = styled(TableRow)({
-  '&:nth-of-type(even)': {
-    backgroundColor: '#f9f9f9',
-  },
-});
-
-const StatsBox = styled(Box)({
-  marginBottom: '16px',
-  padding: '16px',
-  borderRadius: '8px',
-  boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)',
-});
+import axios from 'axios';
+import { UserContext } from '../../context/userContext';
+import CloseIcon from '@mui/icons-material/Close';
+import EditIcon from '@mui/icons-material/Edit';
+import Loader from '../loader/Loader';
+const StyledTableCell = styled(TableCell)({ fontWeight: 'bold', fontSize: '1rem' });
+const StyledTableRow = styled(TableRow)({ '&:nth-of-type(even)': { backgroundColor: '#f9f9f9' } });
+const StatsBox = styled(Box)({ marginBottom: '16px', padding: '16px', borderRadius: '8px', boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)' });
 
 const Marking = () => {
-  const [selectedCourse, setSelectedCourse] = useState('');
-  const [selectedBatch, setSelectedBatch] = useState('');
-  const [selectedAssignment, setSelectedAssignment] = useState(null);
-  const [assignments, setAssignments] = useState(initialAssignments);
-  const [students, setStudents] = useState(initialStudents);
+  const [selectedAssignment, setSelectedAssignment] = useState('');
+  const [assignments, setAssignments] = useState([]);
+  const [submissions, setSubmissions] = useState([]);
+  const [loading, setLoading] = useState(true);
   const theme = useTheme();
+  const { currentUser } = useContext(UserContext);
 
-  const handleCourseChange = (event) => {
-    setSelectedCourse(event.target.value);
+  const [openDetailsDialog, setOpenDetailsDialog] = useState(false);
+  const [openEditDialog, setOpenEditDialog] = useState(false);
+  const [currentSubmission, setCurrentSubmission] = useState(null);
+  const [marks, setMarks] = useState('');
+  const [comments, setComments] = useState('');
+  
+
+  const handleOpenDetailsDialog = (submission) => {
+    setCurrentSubmission(submission);
+    setOpenDetailsDialog(true);
   };
 
-  const handleBatchChange = (event) => {
-    setSelectedBatch(event.target.value);
+  const handleCloseDetailsDialog = () => {
+    setOpenDetailsDialog(false);
+    setCurrentSubmission(null);
   };
 
-  const handleAssignmentChange = (event) => {
-    setSelectedAssignment(event.target.value);
+  const handleOpenEditDialog = (submission) => {
+    setCurrentSubmission(submission);
+    setMarks(submission.marks || '');
+    setComments(submission.comments || '');
+    setOpenEditDialog(true);
   };
 
-  const handleMarkChange = (studentId, assignmentId, marks) => {
-    const marksValue = Number(marks);
-    if (isNaN(marksValue)) return; // Avoid setting invalid marks
-    setStudents(students.map(student =>
-      student.id === studentId
-        ? {
-          ...student,
-          assignments: student.assignments.map(assignment =>
-            assignment.id === assignmentId
-              ? { ...assignment, marks: marksValue }
-              : assignment
-          ),
+  const handleCloseEditDialog = () => {
+    setOpenEditDialog(false);
+    setCurrentSubmission(null);
+    setMarks('');
+    setComments('');
+  };
+
+  const handleSave = async () => {
+    if (currentSubmission) {
+      try {
+        const token = localStorage.getItem('authToken');
+        await axios.put(
+          `${import.meta.env.VITE_BASE_URL}/assignments/submissions/${currentSubmission._id}`,
+          { marks: Number(marks), comments },
+          { headers: { Authorization: `Bearer ${token}` } }
+        );
+        // Update local state
+        setSubmissions(submissions.map(submission =>
+          submission._id === currentSubmission._id
+            ? { ...submission, marks: Number(marks), comments }
+            : submission
+        ));
+        handleCloseEditDialog();
+      } catch (error) {
+        console.error('Failed to save marks and comments:', error.response ? error.response.data : error.message);
+      }
+    }
+  };
+
+  useEffect(() => {
+    const fetchAssignments = async () => {
+      setLoading(true);
+      const token = localStorage.getItem('authToken');
+      const course = localStorage.getItem('selectedCourse');
+      const batch = localStorage.getItem('selectedBatch');
+
+      if (!token || !course || !batch) {
+        console.error('Token, course or batch not found');
+        setLoading(false);
+        return;
+      }
+
+      try {
+        const response = await axios.get(
+          `${import.meta.env.VITE_BASE_URL}/assignments/filter`,
+          {
+            headers: { Authorization: `Bearer ${token}` },
+            params: { course, batch },
+          }
+        );
+        setAssignments(response.data);
+      } catch (error) {
+        console.error('Failed to fetch assignments:', error.response ? error.response.data : error.message);
+      } finally {
+        setTimeout(() => {
+          setLoading(false);
+        }, 3000);
+      }
+    };
+
+    fetchAssignments();
+  }, []);
+
+  const handleAssignmentChange = async (event) => {
+    const assignmentId = event.target.value;
+    setSelectedAssignment(assignmentId);
+    setLoading(true);
+
+    const token = localStorage.getItem('authToken');
+
+    if (!token) {
+      console.error('Token not found');
+      setLoading(false);
+      return;
+    }
+
+    try {
+      const response = await axios.get(
+        `${import.meta.env.VITE_BASE_URL}/assignments/submissions`,
+        {
+          headers: { Authorization: `Bearer ${token}` },
+          params: { assignmentId },
         }
-        : student
-    ));
+      );
+      setSubmissions(response.data);
+    } catch (error) {
+      console.error('Failed to fetch submissions:', error.response ? error.response.data : error.message);
+    } finally {
+      setTimeout(() => {
+        setLoading(false);
+        setShowLoader(false);
+      }, 3000);
+    }
   };
 
   const handleLockToggle = (assignmentId) => {
     setAssignments(assignments.map(assignment =>
-      assignment.id === assignmentId
+      assignment._id === assignmentId
         ? { ...assignment, locked: !assignment.locked }
         : assignment
     ));
   };
 
-  const filteredStudents = students.filter(student =>
-    student.course === selectedCourse && student.batch === selectedBatch
-  );
-
-  const filteredAssignments = assignments.filter(assignment =>
-    filteredStudents.some(student =>
-      student.assignments.some(a => a.id === assignment.id)
-    )
-  );
-
   const getAssignmentStats = (assignmentId) => {
-    const studentsWithAssignment = filteredStudents.filter(student =>
-      student.assignments.some(assignment => assignment.id === assignmentId)
-    );
-
-    const totalStudents = filteredStudents.length;
-    const submittedAssignments = studentsWithAssignment.length;
-    const assignmentMarks = studentsWithAssignment.flatMap(student =>
-      student.assignments.filter(assignment => assignment.id === assignmentId).map(assignment => assignment.marks)
-    );
+    const totalStudents = submissions.length;
+    const submittedAssignments = submissions.filter(sub => sub.assignmentId === assignmentId).length;
+    const assignmentMarks = submissions
+      .filter(submission => submission.assignmentId === assignmentId)
+      .map(submission => submission.marks);
 
     const averageMarks = assignmentMarks.length === 0
       ? 0
       : assignmentMarks.reduce((sum, marks) => sum + marks, 0) / assignmentMarks.length;
 
-    const sortedByMarks = studentsWithAssignment.sort((a, b) =>
-      b.assignments.find(assignment => assignment.id === assignmentId)?.marks -
-      a.assignments.find(assignment => assignment.id === assignmentId)?.marks
-    );
+    const sortedByMarks = submissions
+      .filter(submission => submission.assignmentId === assignmentId)
+      .sort((a, b) => b.marks - a.marks);
 
-    const topStudent = sortedByMarks[0]?.name || 'N/A';
-    const bottomStudent = sortedByMarks.slice(-1)[0]?.name || 'N/A';
+    const topStudent = sortedByMarks[0]?.studentName || 'N/A';
+    const bottomStudent = sortedByMarks.slice(-1)[0]?.studentName || 'N/A';
     const missingAssignments = totalStudents - submittedAssignments;
 
     return {
@@ -151,40 +179,72 @@ const Marking = () => {
       bottomStudent,
       missingAssignments,
       assignmentMarks,
-      studentsWithAssignment: studentsWithAssignment || [],
+      submissions,
     };
   };
-
+  
   const renderAssignmentStatsChart = () => {
     if (!selectedAssignment) return null;
-
-    const stats = getAssignmentStats(selectedAssignment);
-
-    if (!stats.studentsWithAssignment || !Array.isArray(stats.studentsWithAssignment)) {
-      return null;
-    }
-
+  
+    // Aggregate submission data into Pass/Fail categories
+    const totalMarks = selectedAssignmentData?.totalMarks || 100; // Default to 100 if not available
+    const passingPercentage = 50;
+  
+    const passFailData = submissions.reduce(
+      (acc, submission) => {
+        const percentage = (submission.marks / totalMarks) * 100;
+        if (percentage >= passingPercentage) {
+          acc.pass++;
+        } else {
+          acc.fail++;
+        }
+        return acc;
+      },
+      { pass: 0, fail: 0 }
+    );
+  
+    const chartData = [
+      { name: 'Pass', value: passFailData.pass },
+      { name: 'Fail', value: passFailData.fail }
+    ];
+  
     return (
       <Box sx={{ mb: 3 }}>
-        <Typography variant="h6" gutterBottom>Assignment Statistics Chart</Typography>
-        <BarChart
-          width={600}
-          height={300}
-          data={stats.studentsWithAssignment.map(student => ({
-            name: student.name,
-            marks: student.assignments.find(assignment => assignment.id === selectedAssignment)?.marks || 0,
-          }))}
-          margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
-        >
-          <CartesianGrid strokeDasharray="3 3" />
-          <XAxis dataKey="name" />
-          <YAxis />
+        <Typography variant="h6" gutterBottom>Pass/Fail Statistics Chart</Typography>
+        <PieChart width={400} height={300}>
+          <Pie
+            data={chartData}
+            dataKey="value"
+            nameKey="name"
+            cx="50%"
+            cy="50%"
+            outerRadius={100}
+            fill="#8884d8"
+            label
+          >
+            <Cell key="cell-0" fill="blue" />
+            <Cell key="cell-1" fill="red" />
+          </Pie>
           <Tooltip />
           <Legend />
-          <Bar dataKey="marks" fill={theme.palette.primary.main} />
-        </BarChart>
+        </PieChart>
       </Box>
     );
+  };
+
+  const selectedAssignmentData = assignments.find(assignment => assignment._id === selectedAssignment);
+
+  // Determine Pass/Fail based on percentage (70% criteria)
+  const determinePassFail = (marks) => {
+    const totalMarks = selectedAssignmentData?.totalMarks || 100; // Default to 100 if not available
+    const passingPercentage = 50;
+    const percentage = (marks / totalMarks) * 100;
+
+    if (percentage >= passingPercentage) {
+      return <Typography sx={{ color: 'green' }}>Pass</Typography>;
+    } else {
+      return <Typography sx={{ color: 'red' }}>Fail</Typography>;
+    }
   };
 
   return (
@@ -194,40 +254,17 @@ const Marking = () => {
       </Typography>
       <Box sx={{ display: 'flex', gap: 2, mb: 2 }}>
         <FormControl fullWidth>
-          <InputLabel>Course</InputLabel>
-          <Select
-            value={selectedCourse}
-            onChange={handleCourseChange}
-            label="Course"
-          >
-            {courses.map(course => (
-              <MenuItem key={course} value={course}>{course}</MenuItem>
-            ))}
-          </Select>
-        </FormControl>
-        <FormControl fullWidth>
-          <InputLabel>Batch</InputLabel>
-          <Select
-            value={selectedBatch}
-            onChange={handleBatchChange}
-            label="Batch"
-          >
-            {batches.map(batch => (
-              <MenuItem key={batch} value={batch}>{batch}</MenuItem>
-            ))}
-          </Select>
-        </FormControl>
-        <FormControl fullWidth>
           <InputLabel>Assignment</InputLabel>
           <Select
-            value={selectedAssignment}
+            value={selectedAssignment || ''}
             onChange={handleAssignmentChange}
             label="Assignment"
+            disabled={loading}
           >
-            {filteredAssignments.map(assignment => (
-              <MenuItem key={assignment.id} value={assignment.id}>
+            {assignments.map(assignment => (
+              <MenuItem key={assignment._id} value={assignment._id}>
                 {assignment.title}
-                <IconButton onClick={() => handleLockToggle(assignment.id)} sx={{ ml: 2 }}>
+                <IconButton onClick={() => handleLockToggle(assignment._id)} sx={{ ml: 2 }}>
                   {assignment.locked ? <LockIcon /> : <LockOpenIcon />}
                 </IconButton>
               </MenuItem>
@@ -236,60 +273,204 @@ const Marking = () => {
         </FormControl>
       </Box>
 
-      {selectedAssignment && renderAssignmentStatsChart()}
+      {loading ? (
+        <Loader />
+      ) : selectedAssignment ? (
+        <Box>
+          <Typography variant="h6" gutterBottom>
+            Total Marks: {selectedAssignmentData ? selectedAssignmentData.totalMarks : 'Loading...'}</Typography>
+                <Typography>Total Students: {getAssignmentStats(selectedAssignment).totalStudents}</Typography>
+                <Typography>Average Marks: {getAssignmentStats(selectedAssignment).averageMarks}</Typography>
+                <Typography>Top Student: {getAssignmentStats(selectedAssignment).topStudent}</Typography>
+                <Typography>Failed Student: {getAssignmentStats(selectedAssignment).bottomStudent}</Typography>
+               
+          
+          {renderAssignmentStatsChart()}
+        </Box>
+      ) : null}
 
       <TableContainer component={Paper} elevation={3} sx={{ borderRadius: '12px' }}>
         <Table>
           <TableHead>
             <TableRow>
-              <StyledTableCell>Roll No</StyledTableCell>
               <StyledTableCell>Student Name</StyledTableCell>
-              <StyledTableCell>Deployment Link</StyledTableCell>
-              <StyledTableCell>Code</StyledTableCell>
+              <StyledTableCell>Roll No</StyledTableCell>
+              <StyledTableCell>Details</StyledTableCell>
+              <StyledTableCell>Assignment Links</StyledTableCell>
               <StyledTableCell>Upload Time</StyledTableCell>
               <StyledTableCell>Marks</StyledTableCell>
-              <StyledTableCell>Actions</StyledTableCell>
+              <StyledTableCell>Marking</StyledTableCell>
+                <StyledTableCell>Pass/Fail</StyledTableCell>
             </TableRow>
           </TableHead>
           <TableBody>
-            {filteredStudents.map(student => (
-              student.assignments
-                .filter(assignment => assignment.id === selectedAssignment)
-                .map(assignment => (
-                  <StyledTableRow key={assignment.code}>
-                    <TableCell>{student.rollNo}</TableCell>
-                    <TableCell>{student.name}</TableCell>
-                    <TableCell>
-                      <a href={assignment.link} target="_blank" rel="noopener noreferrer">View Assignment</a>
-                    </TableCell>
-                    <TableCell>{assignment.code}</TableCell>
-                    <TableCell>{new Date(assignment.uploadedAt).toLocaleString()}</TableCell>
-                    <TableCell>
-                      <TextField
-                        type="number"
-                        value={assignment.marks || ''}
-                        onChange={(e) => handleMarkChange(student.id, assignment.id, e.target.value)}
-                        sx={{ width: '100px' }}
-                        disabled={assignments.find(a => a.id === selectedAssignment)?.locked}
-                      />
-                    </TableCell>
-                    <TableCell>
-                      <IconButton
-                        onClick={() => handleMarkChange(student.id, assignment.id, '')}
-                        color="error"
-                        disabled={assignments.find(a => a.id === selectedAssignment)?.locked}
-                      >
-                        Clear
-                      </IconButton>
-                    </TableCell>
-                  </StyledTableRow>
-                ))
-            ))}
+            {submissions
+              .filter(submission => submission.assignmentId === selectedAssignment)
+              .map(submission => (
+                <StyledTableRow key={submission._id}>
+                  <TableCell>{submission.studentName}</TableCell>
+                  <TableCell>{submission.rollNo}</TableCell>
+                  <TableCell>
+                    <Button onClick={() => handleOpenDetailsDialog(submission)}>View Detail</Button>
+                  </TableCell>
+                  <TableCell>
+                    {submission.fileUrl && submission.link ? (
+                      <>
+                        <a href={submission.fileUrl} target="_blank" rel="noopener noreferrer">View File</a>
+                        <br />
+                        <a href={submission.link} target="_blank" rel="noopener noreferrer">View Link</a>
+                      </>
+                    ) : submission.fileUrl ? (
+                      <a href={submission.fileUrl} target="_blank" rel="noopener noreferrer">View File</a>
+                    ) : submission.link ? (
+                      <a href={submission.link} target="_blank" rel="noopener noreferrer">View Link</a>
+                    ) : (
+                      'N/A'
+                    )}
+                  </TableCell>
+                  <TableCell>{new Date(submission.submittedAt).toLocaleString()}</TableCell>
+                  <TableCell>
+                    <Box display="flex" alignItems="center">
+                      <Typography variant="body2" sx={{ mr: 1 }}>
+                        {submission.marks !== undefined
+                          ? `${submission.marks} / ${selectedAssignmentData ? selectedAssignmentData.totalMarks : '...'}` 
+                          : `0 / ${selectedAssignmentData ? selectedAssignmentData.totalMarks : '...'}`}
+                      </Typography>
+                    </Box>
+                  </TableCell>
+                  <TableCell>
+                    <IconButton
+                      color="primary"
+                      onClick={() => handleOpenEditDialog(submission)}
+                    >
+                      <EditIcon />
+                    </IconButton>
+                  </TableCell>
+                  <TableCell>
+                    {submission.marks !== undefined ? determinePassFail(submission.marks) : 'Pending'}
+                  </TableCell>
+                </StyledTableRow>
+              ))}
           </TableBody>
         </Table>
       </TableContainer>
+
+      {/* Details Dialog */}
+      <Dialog
+        open={openDetailsDialog}
+        onClose={handleCloseDetailsDialog}
+        maxWidth="sm"
+        fullWidth
+        PaperProps={{
+          style: {
+            backgroundColor: 'white',
+            borderRadius: '8px',
+            boxShadow: '0 4px 8px rgba(0, 0, 0, 0.2)',
+            overflow: 'hidden',
+          },
+        }}
+        BackdropProps={{
+          style: {
+            backdropFilter: 'blur(0.5px)',
+            backgroundColor: 'transparent',
+          },
+        }}
+      >
+        <DialogTitle sx={{ position: 'relative', padding: '16px', textAlign:'center'}}>
+          Assignment Details
+          <IconButton
+            edge="end"
+            color="inherit"
+            onClick={handleCloseDetailsDialog}
+            aria-label="close"
+            sx={{ position: 'absolute', right: 8, top: 8 }}
+          >
+            <CloseIcon />
+          </IconButton>
+        </DialogTitle>
+        <DialogContent sx={{ padding: '16px', overflow: 'hidden', maxHeight: 'calc(100vh - 120px)' }}>
+          {currentSubmission && (
+            <Box>
+              <Typography variant="h6" sx={{textAlign:'center', fontWeight:'bold'}}>Title: {currentSubmission.title}</Typography>
+              <Typography variant="h6" sx={{textAlign:'center', fontWeight:'bold'}}>Description: {currentSubmission.description}</Typography>
+            </Box>
+          )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Edit Dialog */}
+      <Dialog
+        open={openEditDialog}
+        onClose={handleCloseEditDialog}
+        maxWidth="sm"
+        fullWidth
+        PaperProps={{
+          style: {
+            backgroundColor: 'white',
+            borderRadius: '8px',
+            boxShadow: '0 4px 8px rgba(0, 0, 0, 0.2)',
+            overflow: 'hidden',
+          },
+        }}
+        BackdropProps={{
+          style: {
+            backdropFilter: 'blur(0.5px)',
+            backgroundColor: 'transparent',
+          },
+        }}
+      >
+        <DialogTitle sx={{ position: 'relative', padding: '16px' }}>
+
+         Add Marks & Comments
+          <IconButton
+            edge="end"
+            color="inherit"
+            onClick={handleCloseEditDialog}
+            aria-label="close"
+            sx={{ position: 'absolute', right: 8, top: 8 }}
+          >
+            <CloseIcon />
+          </IconButton>
+        </DialogTitle>
+        <DialogContent sx={{ padding: '16px', overflow: 'hidden', maxHeight: 'calc(100vh - 120px)' }}>
+          {currentSubmission && (
+            <Box>
+              <TextField
+                label="Marks"
+                type="number"
+                value={marks}
+                onChange={(e) => setMarks(e.target.value)}
+                fullWidth
+                margin="normal"
+              />
+              <TextField
+                label="Comments"
+                value={comments}
+                onChange={(e) => setComments(e.target.value)}
+                fullWidth
+                margin="normal"
+                multiline
+                rows={4}
+              />
+              <Box display="flex" justifyContent="flex-end" mt={2}>
+              <Button onClick={handleSave}  color="primary">
+                  Add
+                </Button>
+                <Button onClick={handleSave} variant="contained" color="primary">
+                  Update
+                </Button>
+              </Box>
+            </Box>
+          )}
+        </DialogContent>
+      </Dialog>
     </Box>
   );
 };
 
 export default Marking;
+
+
+
+
+

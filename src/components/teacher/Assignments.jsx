@@ -73,17 +73,17 @@ const Assignments = () => {
 
   const token = localStorage.getItem('authToken');
 
- // Retrieve selected course and batch from localStorage
- const selectedCourse = localStorage.getItem('selectedCourse');
- const selectedBatch = localStorage.getItem('selectedBatch');
+  // Retrieve selected course and batch from localStorage
+  const selectedCourse = localStorage.getItem('selectedCourse');
+  const selectedBatch = localStorage.getItem('selectedBatch');
 
- useEffect(() => {
-   if (selectedCourse && selectedBatch) {
-    fetchAssignments();
-   }
- }, [selectedCourse, selectedBatch]);
+  useEffect(() => {
+    if (selectedCourse && selectedBatch) {
+      fetchAssignments();
+    }
+  }, [selectedCourse, selectedBatch]);
 
-  
+
   const fetchAssignments = async () => {
     try {
       setLoading(true);
@@ -216,7 +216,7 @@ const Assignments = () => {
       <Typography variant="h4" gutterBottom>
         Assignments
       </Typography>
-      
+
       {selectedCourse && selectedBatch && (
         <>
           <Button
@@ -237,28 +237,34 @@ const Assignments = () => {
               <Table>
                 <TableHead>
                   <TableRow>
-                    <TableCell>Title</TableCell>
-                    <TableCell>Due Date</TableCell>
-                    <TableCell>Description</TableCell>
-                    <TableCell>Link</TableCell>
-                    <TableCell>File</TableCell>
-                    <TableCell>Total Marks</TableCell>
-                    <TableCell>Actions</TableCell>
+                    <TableCell sx={{fontWeight:'bold'}}>Title</TableCell>
+                    <TableCell sx={{fontWeight:'bold'}}>Due Date</TableCell>
+                    <TableCell sx={{fontWeight:'bold'}}>Description</TableCell>
+                    <TableCell sx={{fontWeight:'bold'}}>Link</TableCell>
+                    <TableCell sx={{fontWeight:'bold'}}>File</TableCell>
+                    <TableCell sx={{fontWeight:'bold'}}>Total Marks</TableCell>
+                    <TableCell sx={{fontWeight:'bold'}}>Actions</TableCell>
                   </TableRow>
                 </TableHead>
                 <TableBody>
                   {assignments.map((assignment) => (
                     <TableRow key={assignment._id}>
                       <TableCell>{assignment.title}</TableCell>
-                      <TableCell>{assignment.dueDate}</TableCell>
+                      <TableCell>
+                        {new Date(assignment.dueDate).toLocaleDateString('en-GB', {
+                          year: 'numeric',
+                          month: 'short',
+                          day: 'numeric'
+                        })}
+                      </TableCell>
                       <TableCell>{assignment.description}</TableCell>
                       <TableCell>
                         {assignment.link ? (
                           <a href={assignment.link} target="_blank" rel="noopener noreferrer">
-                            {assignment.link}
+                            View Link
                           </a>
                         ) : (
-                          ''
+                          'No link'
                         )}
                       </TableCell>
                       <TableCell>
@@ -279,7 +285,7 @@ const Assignments = () => {
                         >
                           <EditIcon />
                         </IconButton>
-                        <IconButton color="secondary" onClick={() => handleDelete(assignment._id)}>
+                        <IconButton color="error" onClick={() => handleDelete(assignment._id)}>
                           <DeleteIcon />
                         </IconButton>
                       </TableCell>
@@ -327,14 +333,14 @@ const Assignments = () => {
             value={newAssignment.link}
             onChange={(e) => setNewAssignment({ ...newAssignment, link: e.target.value })}
           />
-        
+
           <input
             accept=".pdf,.jpg,.jpeg,.png,.gif"
             type="file"
             onChange={handleFileChange}
             style={{ marginTop: '16px' }}
           />
-            <TextField
+          <TextField
             label="Total Marks"
             type="number"
             fullWidth

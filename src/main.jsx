@@ -13,6 +13,8 @@ import Logout from './pages/Logout.jsx';
 import './index.css';
 import UserProvider from './context/userContext.jsx'
 import Notes from './pages/Notes';
+import ProtectedRoute from './components/privateRoutes/ProtectedRoute.jsx';
+
 
 const router = createBrowserRouter([
   {
@@ -22,8 +24,8 @@ const router = createBrowserRouter([
     children: [
       { index: true, element: <Home /> },
       { path: "register", element: <Register /> },
-      { path: "student", element: <StudentDashboard />},
-      { path: "teacher", element: <Teacher /> },
+      { path: "student", element: <ProtectedRoute element={<StudentDashboard />} role="student" /> },
+      { path: "teacher", element: <ProtectedRoute element={<Teacher />} role="teacher" /> },
       {path: "logout",element:<Logout/> },
       
     ]

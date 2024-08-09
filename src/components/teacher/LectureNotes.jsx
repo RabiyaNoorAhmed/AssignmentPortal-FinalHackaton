@@ -154,12 +154,12 @@ const NotesTable = () => {
           <Table>
             <TableHead>
               <TableRow>
-                <TableCell>Title</TableCell>
-                <TableCell>Date</TableCell>
-                <TableCell>Content</TableCell>
-                <TableCell>Link</TableCell>
-                <TableCell>File</TableCell>
-                <TableCell>Actions</TableCell>
+                <TableCell sx={{fontWeight:'bold'}}>Title</TableCell>
+                <TableCell sx={{fontWeight:'bold'}}>Date</TableCell>
+                <TableCell sx={{fontWeight:'bold'}}>Content</TableCell>
+                <TableCell sx={{fontWeight:'bold'}}>Link</TableCell>
+                <TableCell sx={{fontWeight:'bold'}}>File</TableCell>
+                <TableCell sx={{fontWeight:'bold'}}>Actions</TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
@@ -167,9 +167,15 @@ const NotesTable = () => {
                 notes.map(note => (
                   <TableRow key={note._id}>
                     <TableCell>{note.title}</TableCell>
-                    <TableCell>{note.date}</TableCell>
+                    <TableCell>
+                      {new Date(note.date).toLocaleDateString('en-GB', {
+                        year: 'numeric',
+                        month: 'short',
+                        day: 'numeric'
+                      })}
+                    </TableCell>
                     <TableCell>{note.content}</TableCell>
-                    <TableCell>{note.link ? <a href={note.link} target="_blank" rel="noopener noreferrer">{note.link}</a> : ''}</TableCell>
+                    <TableCell>{note.link ? <a href={note.link} target="_blank" rel="noopener noreferrer">View Link</a> : ''}</TableCell>
                     <TableCell>
                       {note.file ? (
                         typeof note.file === 'string' ? (

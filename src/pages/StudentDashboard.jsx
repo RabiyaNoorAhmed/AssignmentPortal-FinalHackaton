@@ -8,18 +8,17 @@ import Sidebar from './SideBar';
 import AssignmentPreview from './AssignmentPreview';
 import SubmitAssignment from './SubmitAssignment';
 import Header from '../components/header/Header';
-import Loader from '../components/loader/Loader';
 import UserProfile from '../components/userprofile/UserProfile';
-import MarkingStu from './MarkingStu'
-import './StudentDashboard.css';
+import MarkingStu from './MarkingStu';
+import Notes from './Notes';
 import { UserContext } from '../context/userContext';
-import Notes from './Notes'
-
+import './StudentDashboard.css';
+import Loader from '../components/loader/Loader';
 export default function StudentDashboard() {
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [selectedSection, setSelectedSection] = useState('');
   const [totalAssignments, setTotalAssignments] = useState(0);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true); // Initialize as true to show loader initially
   const [selectedAssignment, setSelectedAssignment] = useState(null);
 
   const { currentUser } = useContext(UserContext);
@@ -45,12 +44,14 @@ export default function StudentDashboard() {
     } catch (error) {
       console.error('Error fetching total assignments:', error.response ? error.response.data : error.message);
     } finally {
-      setLoading(false);
+      setTimeout(() => {
+        setLoading(false); // Stop loading
+        setShowLoader(false); // Hide loader
+      }, 3000);
     }
   };
 
   const refreshAssignments = async () => {
-    // Use AssignmentPreview's fetchAssignments method or re-fetch
     await fetchAssignments();
   };
 
@@ -67,14 +68,20 @@ export default function StudentDashboard() {
     handleSectionChange('submit-assignment');
   };
 
-  // Add this function to handle submission success
   const handleSubmissionSuccess = (assignmentId) => {
-    // You can refresh assignments or perform other actions here
     console.log(`Assignment with ID ${assignmentId} submitted successfully`);
-    refreshAssignments(); // Refresh the assignments list
+    refreshAssignments();
   };
 
   const renderContent = () => {
+    if (loading) {
+      return (
+        <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '80vh' }}>
+          <Loader />
+        </Box>
+      );
+    }
+
     if (!currentUser) {
       return <Typography variant="h6">Loading user data...</Typography>;
     }
@@ -86,13 +93,15 @@ export default function StudentDashboard() {
         return selectedAssignment ? (
           <SubmitAssignment
             assignmentId={selectedAssignment._id}
-            onSubmissionSuccess={handleSubmissionSuccess} // Pass the function here
+            onSubmissionSuccess={handleSubmissionSuccess}
           />
         ) : (
           <Typography variant="h6">No assignment selected</Typography>
         );
       case 'Notes Lectures':
         return <Notes />;
+      case 'MarkingStu':
+        return <MarkingStu />;
       case 'User Profile':
         return <UserProfile />;
       default:
@@ -133,7 +142,7 @@ export default function StudentDashboard() {
                         loading ? (
                           <CircularProgress size={24} />
                         ) : (
-                          <Typography >{totalAssignments || 0}</Typography>
+                          <Typography>{totalAssignments || 0}</Typography>
                         )
                       }
                     />
