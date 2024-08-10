@@ -9,12 +9,12 @@ import {
   Paper,
   Box,
   Typography,
-  CircularProgress,
 } from "@mui/material";
 import axios from "axios";
 import { UserContext } from "../context/userContext";
-import { BarChart, Bar, Cell, Tooltip, Legend, XAxis, YAxis } from "recharts";
+import { BarChart, Bar, Cell, Tooltip, Legend, XAxis, YAxis, ResponsiveContainer } from "recharts";
 import Loader from '../components/loader/Loader';
+
 const StudentAssignments = () => {
   const [assignments, setAssignments] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -48,10 +48,7 @@ const StudentAssignments = () => {
           error.response ? error.response.data : error.message
         );
       } finally {
-        setTimeout(() => {
-          setLoading(false); // Stop loading
-          setShowLoader(false); // Hide loader
-        }, 3000);
+        setLoading(false);
       }
     };
 
@@ -110,12 +107,26 @@ const StudentAssignments = () => {
         My Assignments
       </Typography>
       {loading ? (
-        <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
+        <Box
+          sx={{
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            height: "100vh",
+          }}
+        >
           <Loader />
         </Box>
       ) : (
         <>
-          <TableContainer component={Paper} elevation={3} >
+          <TableContainer
+            component={Paper}
+            elevation={3}
+            sx={{
+              maxWidth: "100%", // Ensure the table container does not exceed screen width
+              overflowX: "auto", // Add horizontal scrolling for small screens
+            }}
+          >
             <Table>
               <TableHead>
                 <TableRow>
@@ -155,34 +166,49 @@ const StudentAssignments = () => {
                 ))}
               </TableBody>
             </Table>
-
-            {/* Bar chart for assignment statuses */}
-           
           </TableContainer>
-          <Typography variant="h5" gutterBottom sx={{ mt: 4 }}>
-              Assignment Status Distribution
-            </Typography>
-            <BarChart
-              width={500}
-              height={300}
-              data={barData}
-              margin={{
-                top: 20,
-                right: 30,
-                left: 20,
-                bottom: 5,
-              }}
-            >
-              <XAxis dataKey="name" />
-              <YAxis allowDecimals={false} />
-              <Tooltip />
-              <Legend />
-              <Bar dataKey="value" fill="#8884d8">
-                {barData.map((entry, index) => (
-                  <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                ))}
-              </Bar>
-            </BarChart>
+
+          <Typography
+            variant="h5"
+            gutterBottom
+            sx={{ mt: 4, textAlign: "center" }} // Center the chart title
+          >
+            Assignment Status Distribution
+          </Typography>
+          <Box
+            sx={{
+              display: "flex",
+              justifyContent: "center",
+              alignItems: "center",
+            }}
+          >
+            <Box sx={{ width: "100%", maxWidth: "800px" }}> {/* Increased maxWidth for larger chart */}
+              <ResponsiveContainer width="100%" height={300}> {/* Make the chart responsive */}
+                <BarChart
+                  data={barData}
+                  margin={{
+                    top: 20,
+                    right: 30,
+                    left: 20,
+                    bottom: 5,
+                  }}
+                >
+                  <XAxis dataKey="name" />
+                  <YAxis allowDecimals={false} />
+                  <Tooltip />
+                  <Legend />
+                  <Bar dataKey="value" fill="#8884d8">
+                    {barData.map((entry, index) => (
+                      <Cell
+                        key={`cell-${index}`}
+                        fill={COLORS[index % COLORS.length]}
+                      />
+                    ))}
+                  </Bar>
+                </BarChart>
+              </ResponsiveContainer>
+            </Box>
+          </Box>
         </>
       )}
     </Box>

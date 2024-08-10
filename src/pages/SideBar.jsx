@@ -103,6 +103,7 @@ export default function Sidebar({ drawerOpen, toggleDrawer, setSelectedSection, 
         </ListItem>
         <ListItem
           button
+          
           sx={{ py: miniDrawer ? 0.75 : 1 }}
         >
           <ListItemIcon sx={{ minWidth: miniDrawer ? 0 : 56 }}>
