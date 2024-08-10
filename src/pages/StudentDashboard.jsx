@@ -3,7 +3,7 @@ import axios from 'axios';
 import {
   Card, Box, Typography, CardHeader, Container, Grid, Avatar, CircularProgress
 } from '@mui/material';
-import { green, pink, blue} from '@mui/material/colors';
+import { green, pink, blue } from '@mui/material/colors';
 import Sidebar from './SideBar';
 import AssignmentPreview from './AssignmentPreview';
 import SubmitAssignment from './SubmitAssignment';
@@ -68,7 +68,6 @@ export default function StudentDashboard() {
       setLoading(false);
     }
   };
-
 
   const fetchPendingAssignments = async () => {
     setLoading(true);
@@ -135,24 +134,36 @@ export default function StudentDashboard() {
             <Box sx={{ p: 2 }}>
               <Typography variant="h3" gutterBottom>Dashboard</Typography>
               <Grid container spacing={2}>
-                <Grid item xs={12} md={12}>
+                <Grid item xs={12}>
                   {currentUser && (
-                    <Box sx={{ alignItems: 'center', mb: 1, backgroundColor: '#c6d9fe', padding: '10px', borderRadius: '5px', boxShadow: 'rgba(0, 0, 0, 0.35) 0px 5px 15px' }}>
-                      <Avatar alt={currentUser.name} src={currentUser.avatar} sx={{ width: 100, height: 100, marginRight: 1 }} />
-                      <Typography variant="body1" sx={{ marginRight: 2, color: 'black', fontSize: '30px' }}>{currentUser.name}</Typography>
-                      <Typography variant="body2" sx={{ color: 'black', fontSize: '18px' }}>
-                        Batch: {currentUser.batch}
-                      </Typography>
-                      <Typography variant="body2" sx={{ color: 'black', fontSize: '16px' }}>
-                        Course: {currentUser.course}
-                      </Typography>
+                    <Box sx={{ 
+                      display: 'flex', 
+                      alignItems: 'center', 
+                      mb: 1, 
+                      backgroundColor: '#c6d9fe', 
+                      padding: '10px', 
+                      borderRadius: '5px', 
+                      boxShadow: 'rgba(0, 0, 0, 0.35) 0px 5px 15px',
+                      flexDirection: { xs: 'column', md: 'row' }, 
+                      textAlign: { xs: 'center', md: 'left' }
+                    }}>
+                      <Avatar alt={currentUser.name} src={currentUser.avatar} sx={{ width: 100, height: 100, marginBottom: { xs: 2, md: 0 }, marginRight: { md: 2 } }} />
+                      <Box>
+                        <Typography variant="body1" sx={{ color: 'black', fontSize: '30px' }}>{currentUser.name}</Typography>
+                        <Typography variant="body2" sx={{ color: 'black', fontSize: '18px' }}>
+                          Batch: {currentUser.batch}
+                        </Typography>
+                        <Typography variant="body2" sx={{ color: 'black', fontSize: '16px' }}>
+                          Course: {currentUser.course}
+                        </Typography>
+                      </Box>
                     </Box>
                   )}
                 </Grid>
 
                 <Grid item xs={12} sm={6} md={4}>
                   <Card
-                    sx={{ display: 'flex', alignItems: 'center', backgroundColor: pink[50], cursor: 'pointer' }}
+                    sx={{ display: 'flex', alignItems: 'center', backgroundColor: pink[50], cursor: 'pointer', width: '100%' }}
                     onClick={() => handleSectionChange('view-assignments')}
                   >
                     <CardHeader
@@ -175,7 +186,7 @@ export default function StudentDashboard() {
 
                 <Grid item xs={12} sm={6} md={4}>
                   <Card
-                    sx={{ display: 'flex', alignItems: 'center', backgroundColor: green[50], cursor: 'pointer' }}
+                    sx={{ display: 'flex', alignItems: 'center', backgroundColor: green[50], cursor: 'pointer', width: '100%' }}
                     onClick={() => handleSectionChange('view-lectures')}
                   >
                     <CardHeader
@@ -196,10 +207,9 @@ export default function StudentDashboard() {
                   </Card>
                 </Grid>
 
-
                 <Grid item xs={12} sm={6} md={4}>
                   <Card
-                    sx={{ display: 'flex', alignItems: 'center', backgroundColor: blue[50], cursor: 'pointer' }}
+                    sx={{ display: 'flex', alignItems: 'center', backgroundColor: blue[50], cursor: 'pointer', width: '100%' }}
                     onClick={() => handleSectionChange('view-pending-assignments')}
                   >
                     <CardHeader
@@ -220,8 +230,6 @@ export default function StudentDashboard() {
                   </Card>
                 </Grid>
 
-
-                {/* Other cards */}
               </Grid>
             </Box>
           </>
@@ -230,11 +238,11 @@ export default function StudentDashboard() {
   };
 
   return (
-    <Box sx={{ display: 'flex', marginTop: '100px' }}>
+    <Box sx={{ display: 'flex', marginTop: '100px', flexDirection: { xs: 'column', md: 'row' } }}>
       <Sidebar drawerOpen={drawerOpen} toggleDrawer={toggleDrawer} setSelectedSection={setSelectedSection} />
-      <Box component="main" sx={{ flexGrow: 1, bgcolor: 'background.default', p: 3 }}>
+      <Box component="main" sx={{ flexGrow: 1, bgcolor: 'background.default', p: { xs: 1, md: 3 } }}>
         <Container>
-          <Box sx={{ borderRadius: 2, p: 3, mb: 3, backgroundColor: 'background.paper' }}>
+          <Box sx={{ borderRadius: 2, p: { xs: 2, md: 3 }, mb: 3, backgroundColor: 'background.paper' }}>
             {renderContent()}
           </Box>
         </Container>
@@ -242,4 +250,3 @@ export default function StudentDashboard() {
     </Box>
   );
 }
-
